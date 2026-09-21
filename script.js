@@ -324,6 +324,8 @@ function initProfilePage() {
   document.getElementById("pInfoLocation").textContent = f.location;
   document.getElementById("pInfoDone").textContent = f.done;
   document.getElementById("pInfoReviews").textContent = f.reviews;
+  const contactBtn = document.getElementById("pContactBtn");
+  if (contactBtn) contactBtn.href = `poruke.html?id=${f.id}`;
 
   const cat = CATEGORIES.find(c => c.id === f.category);
   const icon = cat ? cat.icon : "🖼️";
@@ -412,6 +414,357 @@ function initProjectChoice() {
   setTimeout(openModal, 350);
 }
 
+/* =========================================================
+   PORUKE — chat u aplikaciji + plaćanje preko PayPal-a
+   Sve poruke i statusi poslova čuvaju se lokalno
+   (localStorage) jer sajt nema pravi backend/server.
+   ========================================================= */
+
+const CHAT_REPLIES = [
+  "Naravno, javljam ti se čim proverim detalje.",
+  "Zvuči dobro, mogu to da uradim u dogovorenom roku.",
+  "Hvala na poruci! Šaljem ti predlog do sutra.",
+  "Može, samo mi pošalji još malo detalja oko projekta.",
+  "Radim na tome, javiću ti čim imam prvu verziju."
+];
+
+function chatKey(id, suffix) {
+  return `bg_chat_${id}_${suffix}`;
+}
+
+function getChatMessages(id) {
+  const raw = localStorage.getItem(chatKey(id, "msgs"));
+  if (raw) {
+    try { return JSON.parse(raw); } catch (e) { /* fallthrough */ }
+  }
+  const f = FREELANCERS.find(x => x.id === id);
+  const seed = [{
+    from: "them",
+    text: f ? `Zdravo! Hvala što si me kontaktirao/la. Slobodno mi opiši šta ti je potrebno za projekat.` : "Zdravo!",
+    time: Date.now()
+  }];
+  saveChatMessages(id, seed);
+  return seed;
+}
+
+function saveChatMessages(id, msgs) {
+  localStorage.setItem(chatKey(id, "msgs"), JSON.stringify(msgs));
+}
+
+function getJobStatus(id) {
+  return localStorage.getItem(chatKey(id, "status")) || "u_toku";
+}
+
+function setJobStatus(id, status) {
+  localStorage.setItem(chatKey(id, "status"), status);
+}
+
+function formatChatTime(ts) {
+  const d = new Date(ts);
+  return d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
+}
+
+function initChatPage() {
+  const shell = document.getElementById("chatShell");
+  if (!shell) return;
+
+  const listEl = document.getElementById("chatListItems");
+  const searchEl = document.getElementById("chatListSearch");
+  const windowHead = document.getElementById("chatWindowHead");
+  const windowEmpty = document.getElementById("chatWindowEmpty");
+  const windowBody = document.getElementById("chatWindowBody");
+  const messagesEl = document.getElementById("chatMessages");
+  const jobPanel = document.getElementById("chatJobPanel");
+  const inputRow = document.getElementById("chatInputRow");
+  const textarea = document.getElementById("chatTextarea");
+  const sendBtn = document.getElementById("chatSendBtn");
+  const backBtn = document.getElementById("chatBackBtn");
+
+  let currentId = null;
+
+  function conversationPreview(id) {
+    const msgs = getChatMessages(id);
+    const last = msgs[msgs.length - 1];
+    if (!last) return "";
+    return (last.from === "me" ? "Ti: " : "") + last.text;
+  }
+
+  function renderList(filter) {
+    const q = (filter || "").toLowerCase().trim();
+    const list = FREELANCERS.filter(f =>
+      !q || f.name.toLowerCase().includes(q) || f.role.toLowerCase().includes(q)
+    );
+    listEl.innerHTML = list.map(f => {
+      const status = getJobStatus(f.id);
+      const dotClass = status === "placeno" ? "paid" : status === "zavrseno" ? "done" : "";
+      return `
+        <button type="button" class="chat-list-item${f.id === currentId ? " active" : ""}" data-id="${f.id}">
+          <img class="chat-list-avatar" src="${f.img}" alt="${f.name}">
+          <div class="chat-list-item-body">
+            <div class="chat-list-item-top">
+              <strong>${f.name}</strong>
+              <span class="chat-status-dot ${dotClass}"></span>
+            </div>
+            <div class="chat-list-item-preview">${conversationPreview(f.id)}</div>
+          </div>
+        </button>
+      `;
+    }).join("") || `<div style="padding:20px; color:var(--text-soft); font-size:0.85rem;">Nema razgovora koji odgovaraju pretrazi.</div>`;
+
+    listEl.querySelectorAll(".chat-list-item").forEach(btn => {
+      btn.addEventListener("click", () => selectConversation(parseInt(btn.dataset.id, 10)));
+    });
+  }
+
+  function renderJobPanel(f) {
+    const status = getJobStatus(f.id);
+    let badgeClass = "", badgeText = "U toku";
+    if (status === "zavrseno") { badgeClass = "done"; badgeText = "Završeno"; }
+    if (status === "placeno") { badgeClass = "paid"; badgeText = "Plaćeno ✓"; }
+
+    document.getElementById("chatJobBadge").className = `job-status-badge ${badgeClass}`;
+    document.getElementById("chatJobBadge").textContent = badgeText;
+
+    let actionsHTML = "";
+    if (status === "u_toku") {
+      actionsHTML = `<button type="button" class="btn btn-sm btn-done" id="markDoneBtn">✅ Označi kao završeno</button>`;
+    } else if (status === "zavrseno") {
+      actionsHTML = `<button type="button" class="btn btn-primary btn-sm" id="payNowBtn">💳 Plati preko PayPal-a</button>`;
+    } else {
+      actionsHTML = `<span style="color:#4ade80; font-weight:700; font-size:0.85rem;">Posao je plaćen 🎉</span>`;
+    }
+
+    jobPanel.innerHTML = `
+      <div class="chat-job-panel-info">
+        <strong>Posao: ${f.role} za "${f.name}"</strong>
+        <span>Cena: ${f.price}</span>
+      </div>
+      <div class="chat-job-panel-actions">${actionsHTML}</div>
+    `;
+
+    const markBtn = document.getElementById("markDoneBtn");
+    if (markBtn) markBtn.addEventListener("click", () => markJobDone(f.id));
+
+    const payBtn = document.getElementById("payNowBtn");
+    if (payBtn) payBtn.addEventListener("click", () => openPaymentModal(f));
+  }
+
+  function renderMessages(id) {
+    const msgs = getChatMessages(id);
+    messagesEl.innerHTML = msgs.map(m => {
+      const cls = m.from === "me" ? "msg-own" : m.from === "system" ? "msg-system" : "msg-theirs";
+      return `<div class="msg ${cls}">${m.text}</div>`;
+    }).join("");
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  function selectConversation(id) {
+    currentId = id;
+    const f = FREELANCERS.find(x => x.id === id);
+    if (!f) return;
+
+    shell.classList.add("chat-open");
+    windowEmpty.style.display = "none";
+    windowBody.style.display = "flex";
+
+    windowHead.innerHTML = `
+      <div class="chat-window-head-info">
+        <button type="button" class="chat-back-btn" id="chatBackBtnInner" aria-label="Nazad">←</button>
+        <img src="${f.img}" alt="${f.name}">
+        <div>
+          <h3>${f.name}</h3>
+          <span>${f.role}</span>
+        </div>
+      </div>
+      <span class="job-status-badge" id="chatJobBadge"></span>
+    `;
+    document.getElementById("chatBackBtnInner").addEventListener("click", () => {
+      shell.classList.remove("chat-open");
+    });
+
+    renderJobPanel(f);
+    renderMessages(id);
+    renderList(searchEl ? searchEl.value : "");
+    textarea.focus();
+  }
+
+  function sendMessage() {
+    const text = textarea.value.trim();
+    if (!text || currentId === null) return;
+    const msgs = getChatMessages(currentId);
+    msgs.push({ from: "me", text, time: Date.now() });
+    saveChatMessages(currentId, msgs);
+    textarea.value = "";
+    renderMessages(currentId);
+    renderList(searchEl ? searchEl.value : "");
+
+    setTimeout(() => {
+      const reply = CHAT_REPLIES[Math.floor(Math.random() * CHAT_REPLIES.length)];
+      const updated = getChatMessages(currentId);
+      updated.push({ from: "them", text: reply, time: Date.now() });
+      saveChatMessages(currentId, updated);
+      if (currentId !== null) {
+        renderMessages(currentId);
+        renderList(searchEl ? searchEl.value : "");
+      }
+    }, 900);
+  }
+
+  function markJobDone(id) {
+    setJobStatus(id, "zavrseno");
+    const msgs = getChatMessages(id);
+    msgs.push({ from: "system", text: "✅ Projekat je označen kao završen. Klijent sada može da plati posao.", time: Date.now() });
+    saveChatMessages(id, msgs);
+    const f = FREELANCERS.find(x => x.id === id);
+    renderJobPanel(f);
+    renderMessages(id);
+    renderList(searchEl ? searchEl.value : "");
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  textarea.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  if (searchEl) searchEl.addEventListener("input", () => renderList(searchEl.value));
+  if (backBtn) backBtn.addEventListener("click", () => shell.classList.remove("chat-open"));
+
+  renderList("");
+
+  const params = new URLSearchParams(window.location.search);
+  const preId = parseInt(params.get("id"), 10);
+  if (preId && FREELANCERS.some(f => f.id === preId)) {
+    selectConversation(preId);
+  }
+
+  // Izloži funkciju za plaćanje globalno (koristi je payment modal)
+  window.__balkanGigHandlePaymentSuccess = function (id) {
+    setJobStatus(id, "placeno");
+    const msgs = getChatMessages(id);
+    msgs.push({ from: "system", text: "💸 Plaćanje je uspešno izvršeno preko PayPal-a. Hvala na saradnji!", time: Date.now() });
+    saveChatMessages(id, msgs);
+    if (id === currentId) {
+      const f = FREELANCERS.find(x => x.id === id);
+      renderJobPanel(f);
+      renderMessages(id);
+    }
+    renderList(searchEl ? searchEl.value : "");
+  };
+}
+
+/* =========================================================
+   PLAĆANJE — PayPal modal (u aplikaciji, bez napuštanja sajta)
+   ========================================================= */
+
+let paypalSDKPromise = null;
+
+function loadPaypalSDK() {
+  if (paypalSDKPromise) return paypalSDKPromise;
+  paypalSDKPromise = new Promise((resolve, reject) => {
+    if (window.paypal) { resolve(window.paypal); return; }
+    const script = document.createElement("script");
+    // NAPOMENA ZA VLASNIKA SAJTA:
+    // Zameni "test" ispod svojim pravim PayPal Client ID-jem
+    // (Live ili Sandbox) da bi plaćanje bilo stvarno funkcionalno.
+    script.src = "https://www.paypal.com/sdk/js?client-id=test&currency=EUR&intent=capture";
+    script.onload = () => resolve(window.paypal);
+    script.onerror = () => reject(new Error("PayPal SDK nije mogao da se učita"));
+    document.body.appendChild(script);
+    setTimeout(() => reject(new Error("PayPal SDK timeout")), 4000);
+  });
+  return paypalSDKPromise;
+}
+
+function parsePrice(priceStr) {
+  const match = (priceStr || "").match(/[\d.,]+/);
+  if (!match) return 50;
+  return parseFloat(match[0].replace(",", ".")) || 50;
+}
+
+function initPaymentModal() {
+  const backdrop = document.getElementById("payModalBackdrop");
+  if (!backdrop) return;
+
+  const closeBtn = document.getElementById("payModalClose");
+  const body = document.getElementById("payModalBody");
+
+  window.__balkanGigCurrentPayFreelancer = null;
+
+  function close() {
+    backdrop.classList.remove("open");
+  }
+
+  closeBtn.addEventListener("click", close);
+  backdrop.addEventListener("click", (e) => { if (e.target === backdrop) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+  window.__balkanGigOpenPayModal = function (f) {
+    window.__balkanGigCurrentPayFreelancer = f;
+    const amount = parsePrice(f.price);
+
+    body.innerHTML = `
+      <div class="pay-summary">
+        <div>
+          <div class="pay-summary-label">Plaćanje za "${f.name}" — ${f.role}</div>
+        </div>
+        <div class="pay-summary-amount">${amount}€</div>
+      </div>
+      <div id="paypal-button-container"></div>
+      <p class="pay-note">Plaćanje se obrađuje bezbedno preko PayPal-a, direktno unutar aplikacije.</p>
+    `;
+
+    backdrop.classList.add("open");
+
+    const container = document.getElementById("paypal-button-container");
+
+    function renderDemoButton() {
+      container.innerHTML = `<button type="button" class="paypal-demo-btn" id="demoPayBtn">💳 Plati ${amount}€ preko PayPal-a</button>`;
+      document.getElementById("demoPayBtn").addEventListener("click", (e) => {
+        const btn = e.currentTarget;
+        btn.disabled = true;
+        btn.textContent = "Obrada plaćanja...";
+        setTimeout(() => showPaySuccess(f), 1200);
+      });
+    }
+
+    loadPaypalSDK().then((paypal) => {
+      if (!paypal || !paypal.Buttons) { renderDemoButton(); return; }
+      try {
+        paypal.Buttons({
+          style: { layout: "vertical", color: "gold", shape: "pill", label: "paypal" },
+          createOrder: (data, actions) => actions.order.create({
+            purchase_units: [{ amount: { value: String(amount), currency_code: "EUR" } }]
+          }),
+          onApprove: (data, actions) => actions.order.capture().then(() => showPaySuccess(f)),
+          onError: () => renderDemoButton()
+        }).render("#paypal-button-container");
+      } catch (err) {
+        renderDemoButton();
+      }
+    }).catch(() => renderDemoButton());
+  };
+
+  function showPaySuccess(f) {
+    body.innerHTML = `
+      <div class="pay-success">
+        <div class="pay-success-icon">✓</div>
+        <h3>Plaćanje uspešno!</h3>
+        <p>Uplata za "${f.name}" je izvršena preko PayPal-a.</p>
+      </div>
+    `;
+    if (window.__balkanGigHandlePaymentSuccess) {
+      window.__balkanGigHandlePaymentSuccess(f.id);
+    }
+    setTimeout(close, 1800);
+  }
+}
+
+function openPaymentModal(f) {
+  if (window.__balkanGigOpenPayModal) window.__balkanGigOpenPayModal(f);
+}
+
 /* ---------- Prijava / Registracija: role toggle ---------- */
 function initAuthToggle() {
   const toggle = document.querySelector(".role-toggle");
@@ -435,5 +788,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initForms();
   initProjectChoice();
   initAuthToggle();
+  initChatPage();
+  initPaymentModal();
   initScrollReveal();
 });
