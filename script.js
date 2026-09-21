@@ -3,16 +3,16 @@
    Zajednički podaci i interakcije za sve stranice
    ========================================================= */
 
-/* ---------- Podaci: kategorije ---------- */
+/* ---------- Podaci: kategorije (usluge) ---------- */
 const CATEGORIES = [
-  { id: "graficki-dizajn", icon: "🎨", name: "Grafički dizajn", desc: "Logotipi, brendiranje, print materijali", count: 412 },
-  { id: "video-editing", icon: "🎬", name: "Video editing", desc: "Montaža, motion graphics, YouTube video", count: 268 },
-  { id: "web-development", icon: "💻", name: "Web development i dizajn", desc: "Sajtovi, web aplikacije, UI/UX", count: 356 },
-  { id: "social-media", icon: "📱", name: "Social media management", desc: "Vođenje profila, sadržaj, oglašavanje", count: 231 },
-  { id: "pisanje-prevodjenje", icon: "✍️", name: "Pisanje i prevođenje", desc: "Copywriting, blogovi, prevodi", count: 189 },
-  { id: "digitalni-marketing", icon: "📢", name: "Digitalni marketing", desc: "SEO, Google i Meta oglasi, strategija", count: 204 },
-  { id: "audio-voiceover", icon: "🎧", name: "Audio i voice-over", desc: "Snimanje glasa, miksovanje, jingle", count: 97 },
-  { id: "fotografija", icon: "📸", name: "Fotografija", desc: "Produktna, portretna i event fotografija", count: 143 },
+  { id: "graficki-dizajn", icon: "🎨", name: "Grafički dizajn", desc: "Logotipi, brendiranje, print materijali" },
+  { id: "video-editing", icon: "🎬", name: "Video editing", desc: "Montaža, motion graphics, YouTube video" },
+  { id: "web-development", icon: "💻", name: "Web development i dizajn", desc: "Sajtovi, web aplikacije, UI/UX" },
+  { id: "social-media", icon: "📱", name: "Social media management", desc: "Vođenje profila, sadržaj, oglašavanje" },
+  { id: "pisanje-prevodjenje", icon: "✍️", name: "Pisanje i prevođenje", desc: "Copywriting, blogovi, prevodi" },
+  { id: "digitalni-marketing", icon: "📢", name: "Digitalni marketing", desc: "SEO, Google i Meta oglasi, strategija" },
+  { id: "audio-voiceover", icon: "🎧", name: "Audio i voice-over", desc: "Snimanje glasa, miksovanje, jingle" },
+  { id: "fotografija", icon: "📸", name: "Fotografija", desc: "Produktna, portretna i event fotografija" },
 ];
 
 /* ---------- Podaci: freelanceri ---------- */
@@ -109,37 +109,60 @@ function renderStars(rating) {
   return "★".repeat(full) + "☆".repeat(5 - full);
 }
 
+/* Pravi (živi) broj freelancera po kategoriji — računa se iz FREELANCERS,
+   ne iz izmišljenih statičnih brojeva */
+function categoryCount(catId) {
+  return FREELANCERS.filter(f => f.category === catId).length;
+}
+
 function categoryCardHTML(cat) {
+  const count = categoryCount(cat.id);
   return `
     <a href="pronadji-freelancera.html?kategorija=${cat.id}" class="cat-card reveal">
       <div class="cat-icon">${cat.icon}</div>
       <h3>${cat.name}</h3>
       <p>${cat.desc}</p>
-      <span class="cat-count">${cat.count} freelancera</span>
+      <span class="cat-count">${count} ${count === 1 ? "freelancer" : "freelancera"}</span>
     </a>
   `;
 }
 
 function freelancerCardHTML(f) {
   return `
-    <div class="fl-card reveal">
-      <div class="fl-top">
-        <img class="fl-avatar" src="${f.img}" alt="${f.name}">
+    <div class="freelancer-card reveal">
+      <div class="freelancer-card-header">
+        <img class="freelancer-avatar" src="${f.img}" alt="${f.name}">
         <div>
-          <div class="fl-name">${f.name}</div>
-          <div class="fl-role">${f.role}</div>
-          <div class="fl-loc">📍 ${f.location}</div>
+          <h3>${f.name}</h3>
+          <div class="freelancer-role">${f.role}</div>
+          <div class="freelancer-location">📍 ${f.location}</div>
         </div>
       </div>
-      <div class="fl-rating"><span class="stars">${renderStars(f.rating)}</span> ${f.rating.toFixed(1)} <span class="count">(${f.reviews} recenzija)</span></div>
-      <p class="fl-desc">${f.desc}</p>
-      <div class="fl-tags">${f.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
-      <div class="fl-footer">
-        <div class="fl-price">${f.price}<span>početna cena</span></div>
-        <div class="fl-done">${f.done} projekata</div>
+      <div class="freelancer-rating">
+        <span class="stars">${renderStars(f.rating)}</span> ${f.rating.toFixed(1)}
+        <span class="freelancer-reviews-count">(${f.reviews} recenzija)</span>
+      </div>
+      <p>${f.desc}</p>
+      <div class="freelancer-tags">${f.tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+      <div class="freelancer-card-footer">
+        <div class="freelancer-price">${f.price}<span>početna cena</span></div>
+        <div class="freelancer-done">${f.done} projekata</div>
       </div>
       <a href="profil-freelancera.html?id=${f.id}" class="btn btn-outline btn-block" style="margin-top:16px;">Pogledaj profil</a>
     </div>
+  `;
+}
+
+/* Filter opcija u sidebaru — generiše se iz CATEGORIES, sa brojem
+   freelancera koji odgovaraju trenutnoj pretrazi */
+function filterOptionHTML(cat) {
+  return `
+    <label class="filter-option" data-cat="${cat.id}">
+      <input type="checkbox" name="kategorija" value="${cat.id}">
+      <span class="filter-option-icon">${cat.icon}</span>
+      <span class="filter-option-name">${cat.name}</span>
+      <span class="filter-option-count">${categoryCount(cat.id)}</span>
+    </label>
   `;
 }
 
@@ -185,7 +208,7 @@ function populateHomepage() {
   const catGrid = document.getElementById("categoryGrid");
   if (catGrid) catGrid.innerHTML = CATEGORIES.map(categoryCardHTML).join("");
 
-  const flGrid = document.getElementById("freelancerGrid");
+  const flGrid = document.getElementById("featuredFreelancers");
   if (flGrid) flGrid.innerHTML = FREELANCERS.slice(0, 6).map(freelancerCardHTML).join("");
 }
 
@@ -196,10 +219,14 @@ function initListingPage() {
 
   const params = new URLSearchParams(window.location.search);
   const filtersForm = document.getElementById("filtersForm");
+  const clearBtn = document.getElementById("clearFiltersBtn");
   const sortSelect = document.getElementById("sortSelect");
   const resultCount = document.getElementById("resultCount");
   const emptyState = document.getElementById("emptyState");
   const searchInput = document.getElementById("listingSearch");
+
+  // Generiši filtere za usluge iz CATEGORIES (umesto ručno pisanih checkbox-ova)
+  filtersForm.innerHTML = CATEGORIES.map(filterOptionHTML).join("");
 
   if (searchInput && params.get("q")) searchInput.value = params.get("q");
 
@@ -210,6 +237,23 @@ function initListingPage() {
       categories: checked,
       sort: sortSelect ? sortSelect.value : "preporuceno"
     };
+  }
+
+  // Ažurira brojeve pored svake usluge prema trenutnoj pretrazi (živo filtriranje),
+  // i vizuelno "zatamni" usluge koje trenutno nemaju nijedan rezultat
+  function updateFilterCounts(query) {
+    filtersForm.querySelectorAll(".filter-option").forEach(label => {
+      const catId = label.dataset.cat;
+      const count = FREELANCERS.filter(f => {
+        const matchesQuery = !query ||
+          f.name.toLowerCase().includes(query) ||
+          f.role.toLowerCase().includes(query) ||
+          f.tags.join(" ").toLowerCase().includes(query);
+        return matchesQuery && f.category === catId;
+      }).length;
+      label.querySelector(".filter-option-count").textContent = count;
+      label.classList.toggle("is-empty", count === 0);
+    });
   }
 
   function render() {
@@ -229,6 +273,11 @@ function initListingPage() {
     grid.innerHTML = list.map(freelancerCardHTML).join("");
     if (resultCount) resultCount.textContent = list.length;
     if (emptyState) emptyState.classList.toggle("show", list.length === 0);
+
+    updateFilterCounts(query);
+    if (clearBtn) clearBtn.hidden = categories.length === 0 && !query;
+
+    initScrollReveal();
   }
 
   // Predpopuni filter iz URL parametra ?kategorija=
@@ -241,6 +290,14 @@ function initListingPage() {
   filtersForm.addEventListener("change", render);
   if (sortSelect) sortSelect.addEventListener("change", render);
   if (searchInput) searchInput.addEventListener("input", render);
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      filtersForm.querySelectorAll('input[name="kategorija"]:checked').forEach(i => i.checked = false);
+      if (searchInput) searchInput.value = "";
+      if (sortSelect) sortSelect.value = "preporuceno";
+      render();
+    });
+  }
 
   render();
 }

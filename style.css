@@ -529,15 +529,43 @@ button {
   font-size: 0.83rem;
 }
 
+.freelancer-location {
+  color: var(--muted);
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
 .freelancer-rating {
   margin: 12px 0;
   color: #f59e0b;
   font-size: 0.9rem;
 }
 
+.freelancer-reviews-count {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
 .freelancer-card p {
   color: var(--text-soft);
   font-size: 0.88rem;
+}
+
+.freelancer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.freelancer-tags .tag {
+  background: var(--bg-alt);
+  color: var(--text-soft);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
 }
 
 .freelancer-card-footer {
@@ -547,6 +575,37 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.freelancer-price {
+  font-weight: 800;
+  color: var(--navy);
+  font-size: 0.95rem;
+}
+
+.freelancer-price span {
+  display: block;
+  font-weight: 500;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.freelancer-done {
+  color: var(--text-soft);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* Scroll-reveal animacija za kartice */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* =========================================
@@ -1165,20 +1224,30 @@ button {
   font-size: 1rem;
 }
 
-.filter-header span {
-  color: var(--muted);
-  font-size: 0.75rem;
+.filters-clear {
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.filters-clear:hover {
+  text-decoration: underline;
 }
 
 .filter-option {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 9px 6px;
+  padding: 9px 8px;
   border-radius: var(--radius-xs);
   cursor: pointer;
   color: var(--text-soft);
   font-size: 0.88rem;
+  transition: 0.15s ease;
 }
 
 .filter-option:hover {
@@ -1186,12 +1255,36 @@ button {
   color: var(--navy);
 }
 
+.filter-option:has(input:checked) {
+  background: #eff6ff;
+  color: var(--primary);
+  font-weight: 700;
+}
+
 .filter-option input {
   accent-color: var(--primary);
 }
 
-.filter-option span {
+.filter-option-icon {
   font-size: 16px;
+}
+
+.filter-option-name {
+  flex: 1;
+}
+
+.filter-option-count {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.filter-option:has(input:checked) .filter-option-count {
+  color: var(--primary);
+}
+
+.filter-option.is-empty {
+  opacity: 0.45;
 }
 
 /* REZULTATI */

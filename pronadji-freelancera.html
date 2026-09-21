@@ -115,103 +115,17 @@
 
         <div class="filter-header">
 
-          <h3>Kategorije</h3>
+          <h3>Usluge</h3>
 
-          <span>Filteri</span>
+          <button type="button" id="clearFiltersBtn" class="filters-clear" hidden>
+            Očisti
+          </button>
 
         </div>
 
-
-        <form id="filtersForm">
-
-          <label class="filter-option">
-            <input
-              type="checkbox"
-              name="kategorija"
-              value="graficki-dizajn"
-            >
-            <span>🎨</span>
-            Grafički dizajn
-          </label>
-
-
-          <label class="filter-option">
-            <input
-              type="checkbox"
-              name="kategorija"
-              value="web-development"
-            >
-            <span>💻</span>
-            Web development
-          </label>
-
-
-          <label class="filter-option">
-            <input
-              type="checkbox"
-              name="kategorija"
-              value="video-editing"
-            >
-            <span>🎬</span>
-            Video editing
-          </label>
-
-
-          <label class="filter-option">
-            <input
-              type="checkbox"
-              name="kategorija"
-              value="social-media"
-            >
-            <span>📱</span>
-            Social media
-          </label>
-
-
-          <label class="filter-option">
-            <input
-              type="checkbox"
-              name="kategorija"
-              value="pisanje-prevodjenje"
-            >
-            <span>✍️</span>
-            Pisanje i prevođenje
-          </label>
-
-
-          <label class="filter-option">
-            <input
-              type="checkbox"
-              name="kategorija"
-              value="digitalni-marketing"
-            >
-            <span>📢</span>
-            Digitalni marketing
-          </label>
-
-
-          <label class="filter-option">
-            <input
-              type="checkbox"
-              name="kategorija"
-              value="audio-voiceover"
-            >
-            <span>🎧</span>
-            Audio i voice-over
-          </label>
-
-
-          <label class="filter-option">
-            <input
-              type="checkbox"
-              name="kategorija"
-              value="fotografija"
-            >
-            <span>📷</span>
-            Fotografija
-          </label>
-
-        </form>
+        <!-- Opcije se generišu dinamički iz liste usluga (script.js),
+             sa brojem freelancera koji trenutno odgovaraju pretrazi -->
+        <form id="filtersForm"></form>
 
       </aside>
 
