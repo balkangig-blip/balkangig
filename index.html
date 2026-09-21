@@ -1,265 +1,806 @@
+```html
 <!DOCTYPE html>
 <html lang="sr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BalkanGig — Pronađi pravog freelancera za svoj projekat</title>
-<meta name="description" content="BalkanGig povezuje firme i klijente sa talentovanim freelancerima sa Balkana. Grafički dizajn, web development, marketing i mnogo više.">
-<link rel="icon" href="assets/logo.jpg">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>BalkanGig | Freelance platforma za Balkan</title>
+  <meta name="description" content="BalkanGig povezuje klijente i freelancere sa Balkana. Pronađi freelancera ili objavi svoj projekat.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<header class="site-header">
-  <div class="container nav">
-    <a href="index.html" class="brand"><img src="assets/logo.jpg" alt="BalkanGig logo">Balkan<span>Gig</span></a>
-    <nav class="nav-links">
-      <a href="index.html" class="active">Početna</a>
-      <a href="pronadji-freelancera.html">Pronađi freelancera</a>
-      <a href="index.html#kategorije">Kategorije</a>
-      <a href="index.html#kako-funkcionise">Kako funkcioniše</a>
-      <a href="index.html#za-freelancere">Za freelancere</a>
-    </nav>
+  <!-- =========================================
+       HEADER
+  ========================================== -->
+
+  <header class="site-header">
+    <div class="container nav">
+
+      <a href="index.html" class="brand">
+        BalkanGig
+      </a>
+
+      <nav class="nav-links">
+        <a href="index.html" class="active">Početna</a>
+        <a href="pronadji-freelancera.html">Pronađi freelancera</a>
+        <a href="#kategorije">Kategorije</a>
+        <a href="#kako-funkcionise">Kako funkcioniše</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="prijava.html" class="btn btn-outline btn-sm">
+          Prijava
+        </a>
+
+        <a href="registracija.html" class="btn btn-primary btn-sm">
+          Registracija
+        </a>
+      </div>
+
+      <button
+        class="hamburger"
+        id="hamburgerBtn"
+        aria-label="Otvori meni"
+        type="button"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+    </div>
+  </header>
+
+
+  <!-- =========================================
+       MOBILE MENU
+  ========================================== -->
+
+  <div class="mobile-nav" id="mobileNav">
+
+    <div class="mobile-nav-top">
+      <a href="index.html" class="brand">
+        BalkanGig
+      </a>
+
+      <button
+        class="mobile-nav-close"
+        id="mobileNavClose"
+        type="button"
+        aria-label="Zatvori meni"
+      >
+        &times;
+      </button>
+    </div>
+
+    <a href="index.html">Početna</a>
+    <a href="pronadji-freelancera.html">Pronađi freelancera</a>
+    <a href="#kategorije">Kategorije</a>
+    <a href="#kako-funkcionise">Kako funkcioniše</a>
+
     <div class="nav-actions">
-      <a href="prijava.html" class="btn btn-outline btn-sm">Prijava</a>
-      <a href="registracija.html" class="btn btn-primary btn-sm">Registracija</a>
-    </div>
-    <button class="hamburger" id="hamburgerBtn" aria-label="Otvori meni">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-</header>
+      <a href="prijava.html" class="btn btn-outline">
+        Prijava
+      </a>
 
-<div class="mobile-nav" id="mobileNav">
-  <div class="mobile-nav-top">
-    <a href="index.html" class="brand"><img src="assets/logo.jpg" alt="BalkanGig logo">Balkan<span>Gig</span></a>
-    <button class="mobile-nav-close" id="mobileNavClose" aria-label="Zatvori meni">&times;</button>
-  </div>
-  <a href="index.html">Početna</a>
-  <a href="pronadji-freelancera.html">Pronađi freelancera</a>
-  <a href="index.html#kategorije">Kategorije</a>
-  <a href="index.html#kako-funkcionise">Kako funkcioniše</a>
-  <a href="index.html#za-freelancere">Za freelancere</a>
-  <div class="nav-actions">
-    <a href="prijava.html" class="btn btn-outline">Prijava</a>
-    <a href="registracija.html" class="btn btn-primary">Registracija</a>
-  </div>
-</div>
+      <a href="registracija.html" class="btn btn-primary">
+        Registracija
+      </a>
+    </div>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="container hero-inner">
-    <h1>Pronađi pravog freelancera za svoj projekat.</h1>
-    <p class="lead">BalkanGig povezuje firme i klijente sa talentovanim freelancerima sa Balkana — brzo, sigurno i bez posrednika.</p>
-    <div class="hero-ctas">
-      <a href="pronadji-freelancera.html" class="btn btn-primary">Pronađi freelancera</a>
-      <a href="objavi-projekat.html" class="btn btn-outline">Objavi projekat</a>
-    </div>
-    <form class="search-box" id="heroSearchForm">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="heroSearchInput" placeholder="Šta ti je potrebno? npr. logo, sajt, prevod...">
-      <button type="submit" class="btn btn-primary">Pretraži</button>
-    </form>
-    <div class="hero-stats">
-      <div><strong>2.400+</strong><span>Aktivnih freelancera</span></div>
-      <div><strong>6.100+</strong><span>Završenih projekata</span></div>
-      <div><strong>4.8/5</strong><span>Prosečna ocena</span></div>
-    </div>
   </div>
-</section>
 
-<!-- KATEGORIJE -->
-<section class="section" id="kategorije">
-  <div class="container">
-    <div class="section-head">
-      <span class="kicker">Kategorije</span>
-      <h2>Šta god ti treba, neko sa Balkana to radi odlično.</h2>
-      <p>Osam glavnih oblasti, stotine freelancera spremnih da preuzmu tvoj sledeći projekat.</p>
-    </div>
-    <div class="cat-grid" id="categoryGrid">
-      <!-- popunjeno iz script.js -->
-    </div>
-  </div>
-</section>
 
-<!-- FREELANCERI -->
-<section class="section bg-alt" id="za-freelancere">
-  <div class="container">
-    <div class="section-head">
-      <span class="kicker">Izdvojeni profili</span>
-      <h2>Pronađi talente za svoj projekat</h2>
-      <p>Proverene reference, jasne cene i freelanceri koji odgovaraju u roku od nekoliko sati.</p>
-    </div>
-    <div class="freelancer-grid" id="freelancerGrid">
-      <!-- popunjeno iz script.js -->
-    </div>
-    <div class="grid-cta">
-      <a href="pronadji-freelancera.html" class="btn btn-outline">Pogledaj sve freelancere</a>
-    </div>
-  </div>
-</section>
+  <!-- =========================================
+       HERO
+  ========================================== -->
 
-<!-- KAKO FUNKCIONIŠE -->
-<section class="section" id="kako-funkcionise">
-  <div class="container">
-    <div class="section-head center">
-      <span class="kicker">Za klijente</span>
-      <h2>Imaš projekat? Objavi ga za nekoliko minuta.</h2>
-      <p>Bez dugih procedura — opišeš šta ti treba i freelanceri sami dolaze sa ponudama.</p>
-    </div>
-    <div class="steps">
-      <div class="step-card">
-        <div class="step-num">1</div>
-        <h3>Opiši šta ti je potrebno</h3>
-        <p>Popuniš kratak formular sa detaljima projekta, budžetom i rokom.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">2</div>
-        <h3>Dobij ponude freelancera</h3>
-        <p>U roku od par sati dobijaš konkretne ponude sa cenama i rokovima izrade.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">3</div>
-        <h3>Izaberi freelancera</h3>
-        <p>Pregledaš profile, portfolio i ocene, pa biraš onoga ko najbolje odgovara.</p>
-      </div>
-      <div class="step-card">
-        <div class="step-num">4</div>
-        <h3>Završi projekat</h3>
-        <p>Dogovarate detalje direktno i realizujete projekat bez posrednika.</p>
-      </div>
-    </div>
-    <div class="grid-cta">
-      <a href="objavi-projekat.html" class="btn btn-primary">Objavi projekat</a>
-    </div>
-  </div>
-</section>
+  <main>
 
-<!-- SPLIT: zašto BalkanGig -->
-<section class="section bg-alt">
-  <div class="container split">
-    <div>
-      <span class="kicker">Zašto BalkanGig</span>
-      <h2>Regionalna platforma koja razume balkansko tržište.</h2>
-      <p>Za razliku od globalnih platformi, BalkanGig povezuje ljude koji govore isti jezik, razumeju lokalne cene i rade u istoj vremenskoj zoni — bez čekanja i nesporazuma.</p>
-      <p>Svaki freelancer prolazi kroz proveru profila, a svaka saradnja je praćena ocenama i recenzijama koje ostaju vidljive svima.</p>
-      <a href="pronadji-freelancera.html" class="btn btn-outline">Istraži freelancere</a>
-    </div>
-    <div class="split-media">
-      <h3>Saradnja bez granica, na jednom mestu</h3>
-      <p>Freelanceri iz Srbije, Hrvatske, BiH, Crne Gore, Severne Makedonije i regiona — na jednoj platformi.</p>
-      <div class="mini-stat-row">
-        <div class="mini-stat"><strong>7</strong><span>zemalja regiona</span></div>
-        <div class="mini-stat"><strong>8</strong><span>kategorija usluga</span></div>
-        <div class="mini-stat"><strong>24h</strong><span>prosečno vreme odgovora</span></div>
-      </div>
-    </div>
-  </div>
-</section>
+    <section class="hero">
 
-<!-- TESTIMONIALS -->
-<section class="section">
-  <div class="container">
-    <div class="section-head center">
-      <span class="kicker">Iskustva</span>
-      <h2>Šta kažu naši korisnici</h2>
-    </div>
-    <div class="testi-grid">
-      <div class="testi-card">
-        <p class="testi-quote">Za tri dana sam imala gotov logo i kompletno vizuelno rešenje za brend. Komunikacija je bila brza i jasna, bez ikakvih komplikacija.</p>
-        <div class="testi-person">
-          <img src="https://i.pravatar.cc/80?img=32" alt="Milica Todorović">
-          <div><strong>Milica Todorović</strong><span>Vlasnica, Studio Cvet</span></div>
+      <div class="container">
+
+        <div class="hero-content">
+
+          <span class="kicker">
+            BALKANGIG
+          </span>
+
+          <h1>
+            Pronađi pravog
+            <span>freelancera</span>
+            za svoj projekat.
+          </h1>
+
+          <p>
+            Poveži se sa talentovanim freelancerima sa Balkana
+            i pronađi osobu koja odgovara tvom projektu.
+          </p>
+
+          <form class="hero-search" id="heroSearchForm">
+
+            <input
+              type="text"
+              id="heroSearchInput"
+              placeholder="Šta ti je potrebno? Npr. logo, sajt, video..."
+              autocomplete="off"
+            >
+
+            <button type="submit">
+              Pretraži
+            </button>
+
+          </form>
+
+          <div class="hero-stats">
+
+            <div class="hero-stat">
+              <strong>Freelanceri</strong>
+              <span>različitih veština</span>
+            </div>
+
+            <div class="hero-stat">
+              <strong>Projekti</strong>
+              <span>za različite potrebe</span>
+            </div>
+
+            <div class="hero-stat">
+              <strong>Balkan</strong>
+              <span>jedna platforma</span>
+            </div>
+
+          </div>
+
         </div>
-      </div>
-      <div class="testi-card">
-        <p class="testi-quote">Angažovao sam programera za izradu web sajta firme i sve je urađeno tačno po dogovoru, u roku i bez dodatnih troškova.</p>
-        <div class="testi-person">
-          <img src="https://i.pravatar.cc/80?img=15" alt="Nemanja Perić">
-          <div><strong>Nemanja Perić</strong><span>Direktor, Perić Logistika</span></div>
-        </div>
-      </div>
-      <div class="testi-card">
-        <p class="testi-quote">Kao freelancer, BalkanGig mi je otvorio vrata ka klijentima iz cele regije. Prve ponude sam dobila već prvog dana.</p>
-        <div class="testi-person">
-          <img src="https://i.pravatar.cc/80?img=47" alt="Ana Kovačević">
-          <div><strong>Ana Kovačević</strong><span>Copywriter</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- CTA BANNER -->
-<section class="section-tight">
-  <div class="container">
-    <div class="cta-banner">
-      <div>
-        <h2>Spreman/na da počneš?</h2>
-        <p>Pridruži se hiljadama klijenata i freelancera koji već sarađuju preko BalkanGig-a.</p>
       </div>
-      <div style="display:flex; gap:14px; flex-wrap:wrap;">
-        <a href="registracija.html" class="btn btn-light">Registruj se besplatno</a>
-        <a href="objavi-projekat.html" class="btn btn-outline" style="border-color:rgba(255,255,255,0.5); color:#fff;">Objavi projekat</a>
-      </div>
-    </div>
-  </div>
-</section>
 
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div class="footer-brand">
-        <a href="index.html" class="brand"><img src="assets/logo.jpg" alt="BalkanGig logo">Balkan<span>Gig</span></a>
-        <p>Platforma koja povezuje firme i klijente sa proverenim freelancerima sa Balkana — brzo, jednostavno i bez posrednika.</p>
-        <div class="socials">
-          <a href="#" aria-label="Instagram">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg>
+    </section>
+
+
+    <!-- =========================================
+         KATEGORIJE
+    ========================================== -->
+
+    <section class="section" id="kategorije">
+
+      <div class="container">
+
+        <div class="section-header">
+
+          <span class="kicker">
+            KATEGORIJE
+          </span>
+
+          <h2>
+            Pronađi uslugu koja ti je potrebna
+          </h2>
+
+          <p>
+            Istraži različite oblasti i pronađi freelancera
+            za svoj projekat.
+          </p>
+
+        </div>
+
+
+        <div class="categories-grid">
+
+          <a href="pronadji-freelancera.html?kategorija=graficki-dizajn"
+             class="category-card">
+
+            <div class="category-icon">🎨</div>
+
+            <h3>
+              Grafički dizajn
+            </h3>
+
+            <p>
+              Logo, brending, baneri i vizuelni sadržaj.
+            </p>
+
           </a>
-          <a href="#" aria-label="Facebook">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-          </a>
-          <a href="#" aria-label="LinkedIn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
-          </a>
-        </div>
-      </div>
-      <div class="footer-col">
-        <h4>Platforma</h4>
-        <ul>
-          <li><a href="pronadji-freelancera.html">Pronađi freelancera</a></li>
-          <li><a href="objavi-projekat.html">Objavi projekat</a></li>
-          <li><a href="index.html#kategorije">Kategorije</a></li>
-          <li><a href="index.html#kako-funkcionise">Kako funkcioniše</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Nalog</h4>
-        <ul>
-          <li><a href="prijava.html">Prijava</a></li>
-          <li><a href="registracija.html">Registracija</a></li>
-          <li><a href="profil-freelancera.html">Primer profila</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>Kontakt</h4>
-        <ul>
-          <li><a href="mailto:kontakt@balkangig.com">kontakt@balkangig.com</a></li>
-          <li><a href="tel:+38160123456">+381 60 123 456</a></li>
-          <li><a href="#">Uslovi korišćenja</a></li>
-          <li><a href="#">Politika privatnosti</a></li>
-        </ul>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <span>© 2026 BalkanGig. Sva prava zadržana.</span>
-      <span>Napravljeno sa ❤ za freelancere i klijente sa Balkana.</span>
-    </div>
-  </div>
-</footer>
 
-<script src="script.js"></script>
+
+          <a href="pronadji-freelancera.html?kategorija=web-development"
+             class="category-card">
+
+            <div class="category-icon">💻</div>
+
+            <h3>
+              Web development
+            </h3>
+
+            <p>
+              Izrada sajtova, aplikacija i web rešenja.
+            </p>
+
+          </a>
+
+
+          <a href="pronadji-freelancera.html?kategorija=video-editing"
+             class="category-card">
+
+            <div class="category-icon">🎬</div>
+
+            <h3>
+              Video editing
+            </h3>
+
+            <p>
+              Montaža videa, reklama i društvenih mreža.
+            </p>
+
+          </a>
+
+
+          <a href="pronadji-freelancera.html?kategorija=social-media"
+             class="category-card">
+
+            <div class="category-icon">📱</div>
+
+            <h3>
+              Social media
+            </h3>
+
+            <p>
+              Vođenje profila i kreiranje sadržaja.
+            </p>
+
+          </a>
+
+
+          <a href="pronadji-freelancera.html?kategorija=pisanje-prevodjenje"
+             class="category-card">
+
+            <div class="category-icon">✍️</div>
+
+            <h3>
+              Pisanje i prevođenje
+            </h3>
+
+            <p>
+              Tekstovi, prevodi, blogovi i sadržaj.
+            </p>
+
+          </a>
+
+
+          <a href="pronadji-freelancera.html?kategorija=digitalni-marketing"
+             class="category-card">
+
+            <div class="category-icon">📢</div>
+
+            <h3>
+              Digitalni marketing
+            </h3>
+
+            <p>
+              Marketing, oglasi i promocija.
+            </p>
+
+          </a>
+
+
+          <a href="pronadji-freelancera.html?kategorija=audio-voiceover"
+             class="category-card">
+
+            <div class="category-icon">🎧</div>
+
+            <h3>
+              Audio i voice-over
+            </h3>
+
+            <p>
+              Glas, podcast, audio obrada i produkcija.
+            </p>
+
+          </a>
+
+
+          <a href="pronadji-freelancera.html?kategorija=fotografija"
+             class="category-card">
+
+            <div class="category-icon">📷</div>
+
+            <h3>
+              Fotografija
+            </h3>
+
+            <p>
+              Fotografisanje, obrada i vizuelni sadržaj.
+            </p>
+
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         FREELANCERI
+    ========================================== -->
+
+    <section class="section section-alt">
+
+      <div class="container">
+
+        <div class="section-header">
+
+          <span class="kicker">
+            FREELANCERI
+          </span>
+
+          <h2>
+            Upoznaj freelancere
+          </h2>
+
+          <p>
+            Istraži profile i pronađi stručnjaka za svoj projekat.
+          </p>
+
+        </div>
+
+
+        <div
+          class="freelancer-grid"
+          id="featuredFreelancers"
+        >
+        </div>
+
+
+        <div style="text-align:center; margin-top:35px;">
+
+          <a
+            href="pronadji-freelancera.html"
+            class="btn btn-primary"
+          >
+            Pogledaj sve freelancere
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         KAKO FUNKCIONIŠE
+    ========================================== -->
+
+    <section class="section" id="kako-funkcionise">
+
+      <div class="container">
+
+        <div class="section-header">
+
+          <span class="kicker">
+            KAKO FUNKCIONIŠE
+          </span>
+
+          <h2>
+            Jednostavno od početka do kraja
+          </h2>
+
+          <p>
+            BalkanGig povezuje klijente i freelancere
+            na jednostavan način.
+          </p>
+
+        </div>
+
+
+        <div class="steps-grid">
+
+          <div class="step-card">
+
+            <div class="step-number">
+              1
+            </div>
+
+            <h3>
+              Pronađi freelancera
+            </h3>
+
+            <p>
+              Pretraži freelancere po kategoriji,
+              veštinama ili imenu.
+            </p>
+
+          </div>
+
+
+          <div class="step-card">
+
+            <div class="step-number">
+              2
+            </div>
+
+            <h3>
+              Dogovorite se
+            </h3>
+
+            <p>
+              Kontaktiraj freelancera i dogovori
+              detalje projekta.
+            </p>
+
+          </div>
+
+
+          <div class="step-card">
+
+            <div class="step-number">
+              3
+            </div>
+
+            <h3>
+              Završi projekat
+            </h3>
+
+            <p>
+              Sarađujte i završite posao
+              prema dogovoru.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         ZAŠTO BALKANGIG
+    ========================================== -->
+
+    <section class="section section-alt">
+
+      <div class="container">
+
+        <div class="split-section">
+
+          <div>
+
+            <span class="kicker">
+              ZAŠTO BALKANGIG
+            </span>
+
+            <h2>
+              Jedno mesto za klijente i freelancere sa Balkana.
+            </h2>
+
+            <p>
+              Cilj BalkanGig-a je da olakša pronalaženje
+              kvalitetnih saradnika i projekata širom regiona.
+            </p>
+
+
+            <ul class="split-list">
+
+              <li>
+                <span>
+                  Jednostavna pretraga freelancera
+                </span>
+              </li>
+
+              <li>
+                <span>
+                  Različite kategorije i veštine
+                </span>
+              </li>
+
+              <li>
+                <span>
+                  Profili freelancera na jednom mestu
+                </span>
+              </li>
+
+              <li>
+                <span>
+                  Platforma namenjena Balkanu
+                </span>
+              </li>
+
+            </ul>
+
+          </div>
+
+
+          <div class="split-image">
+
+            <img
+              src="https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1000&q=80"
+              alt="Saradnja na projektu"
+            >
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         TESTIMONIALS
+    ========================================== -->
+
+    <section class="section">
+
+      <div class="container">
+
+        <div class="section-header">
+
+          <span class="kicker">
+            ISKUSTVA
+          </span>
+
+          <h2>
+            Šta korisnici kažu
+          </h2>
+
+          <p>
+            Primeri iskustava korisnika platforme.
+          </p>
+
+        </div>
+
+
+        <div class="testimonials-grid">
+
+          <div class="testimonial">
+
+            <p>
+              "BalkanGig mi je omogućio da na jednom mestu
+              pronađem freelancera za dizajn."
+            </p>
+
+            <div class="testimonial-author">
+
+              <div>
+                <strong>
+                  Primer korisnika
+                </strong>
+
+                <span>
+                  Klijent
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="testimonial">
+
+            <p>
+              "Jednostavan način da predstavim svoje veštine
+              i dođem do novih projekata."
+            </p>
+
+            <div class="testimonial-author">
+
+              <div>
+                <strong>
+                  Primer freelancera
+                </strong>
+
+                <span>
+                  Freelancer
+                </span>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div class="testimonial">
+
+            <p>
+              "Ideja platforme je da poveže ljude iz regiona
+              koji žele da sarađuju."
+            </p>
+
+            <div class="testimonial-author">
+
+              <div>
+                <strong>
+                  Primer korisnika
+                </strong>
+
+                <span>
+                  Korisnik
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================
+         CTA
+    ========================================== -->
+
+    <section class="cta-section">
+
+      <div class="container">
+
+        <div class="cta-box">
+
+          <h2>
+            Imaš projekat?
+          </h2>
+
+          <p>
+            Objavi projekat i pronađi freelancera
+            koji može da ti pomogne.
+          </p>
+
+          <a
+            href="objavi-projekat.html"
+            class="btn btn-light"
+          >
+            Objavi projekat
+          </a>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- =========================================
+       FOOTER
+  ========================================== -->
+
+  <footer class="site-footer">
+
+    <div class="container">
+
+      <div class="footer-grid">
+
+        <div class="footer-brand">
+
+          <a href="index.html" class="brand">
+            BalkanGig
+          </a>
+
+          <p>
+            Platforma za povezivanje klijenata
+            i freelancera sa Balkana.
+          </p>
+
+        </div>
+
+
+        <div class="footer-col">
+
+          <h4>
+            Platforma
+          </h4>
+
+          <ul>
+
+            <li>
+              <a href="pronadji-freelancera.html">
+                Pronađi freelancera
+              </a>
+            </li>
+
+            <li>
+              <a href="objavi-projekat.html">
+                Objavi projekat
+              </a>
+            </li>
+
+            <li>
+              <a href="#kategorije">
+                Kategorije
+              </a>
+            </li>
+
+          </ul>
+
+        </div>
+
+
+        <div class="footer-col">
+
+          <h4>
+            Nalog
+          </h4>
+
+          <ul>
+
+            <li>
+              <a href="prijava.html">
+                Prijava
+              </a>
+            </li>
+
+            <li>
+              <a href="registracija.html">
+                Registracija
+              </a>
+            </li>
+
+          </ul>
+
+        </div>
+
+
+        <div class="footer-col">
+
+          <h4>
+            Kontakt
+          </h4>
+
+          <ul>
+
+            <li>
+              <a href="mailto:kontakt@balkangig.com">
+                kontakt@balkangig.com
+              </a>
+            </li>
+
+          </ul>
+
+        </div>
+
+      </div>
+
+
+      <div class="footer-bottom">
+
+        <span>
+          © 2026 BalkanGig
+        </span>
+
+        <span>
+          Platforma za freelancere i klijente sa Balkana.
+        </span>
+
+      </div>
+
+    </div>
+
+  </footer>
+
+
+  <!-- JAVASCRIPT -->
+
+  <script src="script.js"></script>
+
 </body>
 </html>
+```
