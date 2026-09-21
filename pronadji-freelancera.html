@@ -24,7 +24,6 @@
       <a href="pronadji-freelancera.html" class="active">Pronađi freelancera</a>
       <a href="index.html#kategorije">Kategorije</a>
       <a href="index.html#kako-funkcionise">Kako funkcioniše</a>
-      <a href="index.html#za-freelancere">Za freelancere</a>
     </nav>
 
     <div class="nav-actions">
@@ -47,7 +46,7 @@
   <div class="mobile-nav-top">
     <a href="index.html" class="brand">BalkanGig</a>
 
-    <button class="mobile-nav-close" id="mobileNavClose" aria-label="Zatvori meni">
+    <button class="mobile-nav-close" id="mobileNavClose">
       &times;
     </button>
   </div>
@@ -56,7 +55,6 @@
   <a href="pronadji-freelancera.html">Pronađi freelancera</a>
   <a href="index.html#kategorije">Kategorije</a>
   <a href="index.html#kako-funkcionise">Kako funkcioniše</a>
-  <a href="index.html#za-freelancere">Za freelancere</a>
 
   <div class="nav-actions">
     <a href="prijava.html" class="btn btn-outline">Prijava</a>
@@ -66,23 +64,46 @@
 </div>
 
 
-<section class="section-tight">
+<!-- HERO -->
+
+<section class="freelancer-hero">
 
   <div class="container">
 
-    <div class="section-head">
+    <span class="kicker">BalkanGig freelanceri</span>
 
-      <span class="kicker">Freelanceri</span>
+    <h1>
+      Pronađi osobu za svoj projekat.
+    </h1>
 
-      <h2>Pronađi freelancera za svoj projekat</h2>
+    <p>
+      Pretraži profile freelancera po veštinama, kategoriji
+      ili imenu i pronađi ono što ti je potrebno.
+    </p>
 
-      <p>
-        Pretraži dostupne profile po kategoriji, veštinama ili imenu
-        i pronađi osobu koja odgovara onome što ti je potrebno.
-      </p>
+
+    <div class="big-search">
+
+      <span class="search-icon">⌕</span>
+
+      <input
+        type="text"
+        id="listingSearch"
+        placeholder="Npr. web developer, logo dizajner, video editor..."
+      >
 
     </div>
 
+  </div>
+
+</section>
+
+
+<!-- LISTING -->
+
+<section class="freelancer-listing">
+
+  <div class="container">
 
     <div class="listing-layout">
 
@@ -91,57 +112,103 @@
 
       <aside class="filters">
 
-        <h3>Filteri</h3>
+        <div class="filter-header">
+
+          <h3>Kategorije</h3>
+
+          <span>Filteri</span>
+
+        </div>
+
 
         <form id="filtersForm">
 
-          <div class="filter-group">
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="graficki-dizajn"
+            >
+            <span>🎨</span>
+            Grafički dizajn
+          </label>
 
-            <label style="font-weight:700; color:var(--navy-deep); margin-bottom:12px;">
-              Kategorija
-            </label>
 
-            <label>
-              <input type="checkbox" name="kategorija" value="graficki-dizajn">
-              🎨 Grafički dizajn
-            </label>
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="web-development"
+            >
+            <span>💻</span>
+            Web development
+          </label>
 
-            <label>
-              <input type="checkbox" name="kategorija" value="video-editing">
-              🎬 Video editing
-            </label>
 
-            <label>
-              <input type="checkbox" name="kategorija" value="web-development">
-              💻 Web development
-            </label>
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="video-editing"
+            >
+            <span>🎬</span>
+            Video editing
+          </label>
 
-            <label>
-              <input type="checkbox" name="kategorija" value="social-media">
-              📱 Social media
-            </label>
 
-            <label>
-              <input type="checkbox" name="kategorija" value="pisanje-prevodjenje">
-              ✍️ Pisanje i prevođenje
-            </label>
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="social-media"
+            >
+            <span>📱</span>
+            Social media
+          </label>
 
-            <label>
-              <input type="checkbox" name="kategorija" value="digitalni-marketing">
-              📢 Digitalni marketing
-            </label>
 
-            <label>
-              <input type="checkbox" name="kategorija" value="audio-voiceover">
-              🎧 Audio i voice-over
-            </label>
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="pisanje-prevodjenje"
+            >
+            <span>✍️</span>
+            Pisanje i prevođenje
+          </label>
 
-            <label>
-              <input type="checkbox" name="kategorija" value="fotografija">
-              📸 Fotografija
-            </label>
 
-          </div>
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="digitalni-marketing"
+            >
+            <span>📢</span>
+            Digitalni marketing
+          </label>
+
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="audio-voiceover"
+            >
+            <span>🎧</span>
+            Audio i voice-over
+          </label>
+
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="fotografija"
+            >
+            <span>📷</span>
+            Fotografija
+          </label>
 
         </form>
 
@@ -150,54 +217,37 @@
 
       <!-- REZULTATI -->
 
-      <div>
+      <main class="freelancer-results">
 
-        <div class="listing-top">
+        <div class="results-header">
 
-          <div class="field" style="margin:0; min-width:240px;">
+          <div>
 
-            <input
-              type="text"
-              id="listingSearch"
-              placeholder="Pretraži po imenu ili veštini..."
-            >
+            <h2>Freelanceri</h2>
 
-          </div>
-
-
-          <div style="display:flex; align-items:center; gap:14px;">
-
-            <span style="color:var(--mist); font-size:.9rem;">
-
-              <strong
-                id="resultCount"
-                style="color:var(--navy-deep);"
-              >
-                0
-              </strong>
-
-              rezultata
-
-            </span>
-
-
-            <select id="sortSelect">
-
-              <option value="preporuceno">
-                Preporučeno
-              </option>
-
-              <option value="ocena">
-                Najviša ocena
-              </option>
-
-              <option value="projekti">
-                Najviše projekata
-              </option>
-
-            </select>
+            <p>
+              <strong id="resultCount">0</strong>
+              profila
+            </p>
 
           </div>
+
+
+          <select id="sortSelect">
+
+            <option value="preporuceno">
+              Preporučeno
+            </option>
+
+            <option value="ocena">
+              Najviša ocena
+            </option>
+
+            <option value="projekti">
+              Najviše projekata
+            </option>
+
+          </select>
 
         </div>
 
@@ -213,15 +263,47 @@
           id="emptyState"
         >
 
-          <h3>Nema pronađenih profila</h3>
+          <div class="empty-icon">⌕</div>
+
+          <h3>Nema pronađenih freelancera</h3>
 
           <p>
-            Pokušaj sa drugom pretragom ili promeni filtere.
+            Probaj drugi pojam za pretragu ili ukloni neki filter.
           </p>
 
         </div>
 
+      </main>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- CTA -->
+
+<section class="freelancer-cta">
+
+  <div class="container">
+
+    <div class="cta-inner">
+
+      <div>
+
+        <span class="kicker">Ne nalaziš ono što tražiš?</span>
+
+        <h2>Objavi projekat i dozvoli freelancerima da ti se jave.</h2>
+
       </div>
+
+      <a
+        href="objavi-projekat.html"
+        class="btn btn-light"
+      >
+        Objavi projekat
+      </a>
 
     </div>
 
@@ -236,7 +318,6 @@
 
     <div class="footer-grid">
 
-
       <div class="footer-brand">
 
         <a href="index.html" class="brand">
@@ -245,37 +326,8 @@
 
         <p>
           Platforma za povezivanje klijenata i freelancera
-          sa Balkana na jednom mestu.
+          sa Balkana.
         </p>
-
-        <div class="socials">
-
-          <a href="#" aria-label="Instagram">
-            <svg width="16" height="16" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="2" y="2" width="20" height="20" rx="5"/>
-              <circle cx="12" cy="12" r="4"/>
-              <circle cx="17.5" cy="6.5" r="1"/>
-            </svg>
-          </a>
-
-          <a href="#" aria-label="Facebook">
-            <svg width="16" height="16" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
-            </svg>
-          </a>
-
-          <a href="#" aria-label="LinkedIn">
-            <svg width="16" height="16" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
-              <rect x="2" y="9" width="4" height="12"/>
-              <circle cx="4" cy="4" r="2"/>
-            </svg>
-          </a>
-
-        </div>
 
       </div>
 
@@ -304,12 +356,6 @@
             </a>
           </li>
 
-          <li>
-            <a href="index.html#kako-funkcionise">
-              Kako funkcioniše
-            </a>
-          </li>
-
         </ul>
 
       </div>
@@ -330,12 +376,6 @@
           <li>
             <a href="registracija.html">
               Registracija
-            </a>
-          </li>
-
-          <li>
-            <a href="profil-freelancera.html">
-              Primer profila
             </a>
           </li>
 
@@ -362,18 +402,6 @@
             </a>
           </li>
 
-          <li>
-            <a href="#">
-              Uslovi korišćenja
-            </a>
-          </li>
-
-          <li>
-            <a href="#">
-              Politika privatnosti
-            </a>
-          </li>
-
         </ul>
 
       </div>
@@ -384,11 +412,11 @@
     <div class="footer-bottom">
 
       <span>
-        © 2026 BalkanGig. Sva prava zadržana.
+        © 2026 BalkanGig
       </span>
 
       <span>
-        Platforma za klijente i freelancere sa Balkana.
+        Platforma za freelancere i klijente sa Balkana.
       </span>
 
     </div>
