@@ -29,14 +29,99 @@
   --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 20px 55px rgba(0, 0, 0, 0.55);
 
-  --radius-xs: 8px;
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
+  --radius-xs: 10px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
   --radius-icon: 14px;
   --radius-pill: 999px;
 
   --max-width: 1180px;
+
+  /* Elementi koji zavise od teme (svetla/tamna) */
+  --header-bg: rgba(8, 13, 25, 0.72);
+  --header-line: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.35), transparent);
+  --hero-grad-1: #0b1324;
+  --hero-grad-2: #080d18;
+  --sidebar-fade: #0b1526;
+  --mist-opacity: 1;
+  --avatar-fallback: #1c2946;
+
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-fast: 0.2s;
+  --t-mid: 0.35s;
+  --t-slow: 0.5s;
+}
+
+/* =========================================
+   SVETLA TEMA
+   Aktivira se sa [data-theme="light"] na <html>
+========================================= */
+
+html[data-theme="light"] {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --accent: #0d9488;
+
+  --heading: #0f1b30;
+  --text: #33425c;
+  --text-soft: #5c6c88;
+  --muted: #8494ac;
+
+  --white: #ffffff;
+  --bg: #f3f6fc;
+  --bg-alt: #eaeff8;
+  --border: rgba(15, 23, 42, 0.09);
+
+  --shadow-sm: 0 4px 15px rgba(30, 41, 59, 0.06);
+  --shadow-md: 0 10px 30px rgba(30, 41, 59, 0.09);
+  --shadow-lg: 0 20px 55px rgba(30, 41, 59, 0.12);
+
+  --header-bg: rgba(255, 255, 255, 0.78);
+  --header-line: linear-gradient(90deg, transparent, rgba(15, 23, 42, 0.12), transparent);
+  --hero-grad-1: #eef3fb;
+  --hero-grad-2: #f8fafc;
+  --sidebar-fade: #eef3fb;
+  --mist-opacity: 0.45;
+  --avatar-fallback: #dce6f5;
+}
+
+/* Sve boje/senke prelaze glatko kad se menja tema */
+body,
+.site-header,
+.mobile-nav,
+.hero,
+.freelancer-hero,
+.category-card,
+.freelancer-card,
+.cat-card,
+.filters,
+.filter-option,
+.filter-pill,
+.empty-state,
+.form-card,
+.auth-card,
+.profile-card,
+.sidebar-price,
+.choice-modal,
+.choice-card,
+.chat-shell,
+.chat-list,
+.chat-window,
+.chat-list-item,
+.chat-input-row textarea,
+.site-footer,
+.btn,
+.theme-toggle,
+input,
+select,
+textarea,
+.tag {
+  transition:
+    background-color var(--t-mid) var(--ease-smooth),
+    border-color var(--t-mid) var(--ease-smooth),
+    color var(--t-mid) var(--ease-smooth),
+    box-shadow var(--t-mid) var(--ease-smooth);
 }
 
 /* =========================================
@@ -106,11 +191,18 @@ body::after {
   background: var(--white);
 }
 
+body::before,
+body::after {
+  opacity: var(--mist-opacity);
+  transition: opacity var(--t-slow) var(--ease-smooth);
+}
+
 .bg-mist-layer span {
   position: absolute;
   border-radius: 50%;
   filter: blur(100px);
-  opacity: 0.55;
+  opacity: calc(0.55 * var(--mist-opacity));
+  transition: opacity var(--t-slow) var(--ease-smooth);
 }
 
 .bg-mist-layer span:nth-child(1) {
@@ -186,19 +278,143 @@ button {
 }
 
 /* =========================================
+   KLIK ANIMACIJE (ripple efekat)
+   Dodaje se JS-om na dugmad, kartice i linkove
+   koje se mogu kliknuti, radi mekog "talasa" pri kliku.
+========================================= */
+
+.ripple-host {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+  transform: scale(0);
+  opacity: 0.65;
+  pointer-events: none;
+  animation: rippleAnim 0.6s var(--ease-smooth);
+}
+
+.ripple.ripple-dark {
+  background: rgba(37, 99, 235, 0.22);
+}
+
+@keyframes rippleAnim {
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.click-pop {
+  animation: clickPop 0.32s var(--ease-smooth);
+}
+
+@keyframes clickPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ripple { animation: none; display: none; }
+  .click-pop { animation: none; }
+}
+
+/* =========================================
+   THEME TOGGLE (svetla / tamna tema)
+========================================= */
+
+.theme-toggle {
+  position: relative;
+  overflow: hidden;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--text-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease-smooth), color var(--t-fast) var(--ease-smooth), transform var(--t-fast) var(--ease-smooth), background-color var(--t-mid) var(--ease-smooth);
+}
+
+.theme-toggle:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.theme-toggle:active {
+  transform: scale(0.9);
+}
+
+.theme-toggle svg {
+  position: absolute;
+  width: 19px;
+  height: 19px;
+  transition: transform 0.5s var(--ease-smooth), opacity var(--t-mid) ease;
+}
+
+.theme-toggle .icon-sun {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.4);
+}
+
+.theme-toggle .icon-moon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+html[data-theme="light"] .theme-toggle .icon-sun {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+html[data-theme="light"] .theme-toggle .icon-moon {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.4);
+}
+
+.mobile-nav-top .theme-toggle {
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+/* =========================================
    HEADER
 ========================================= */
 
 .site-header {
-  background: rgba(8, 13, 25, 0.72);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.02), 0 8px 24px -18px rgba(15, 23, 42, 0.25);
+  background: var(--header-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 0;
+  box-shadow: 0 8px 30px -20px rgba(15, 23, 42, 0.35);
   position: sticky;
   top: 0;
   z-index: 1000;
 }
+
+/* Umesto oštre 1px linije ispod menija, blag "sjaj" koji se gubi ka ivicama */
+.site-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--header-line);
+  pointer-events: none;
+}
+
+
 
 .nav {
   min-height: 74px;
@@ -285,6 +501,8 @@ button {
 ========================================= */
 
 .btn {
+  position: relative;
+  overflow: hidden;
   min-height: 44px;
   padding: 0 20px;
   border-radius: var(--radius-sm);
@@ -295,7 +513,12 @@ button {
   gap: 8px;
   font-weight: 700;
   font-size: 0.9rem;
-  transition: 0.2s ease;
+  transition: transform var(--t-fast) var(--ease-smooth), background-color var(--t-fast) var(--ease-smooth), border-color var(--t-fast) var(--ease-smooth), box-shadow var(--t-fast) var(--ease-smooth), color var(--t-fast) var(--ease-smooth);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active {
+  transform: scale(0.96);
 }
 
 .btn-primary {
@@ -306,6 +529,10 @@ button {
 .btn-primary:hover {
   background: var(--primary-dark);
   transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .btn-outline {
@@ -341,11 +568,22 @@ button {
 
 .hamburger {
   display: none;
+  position: relative;
   border: 0;
   background: transparent;
   width: 42px;
   height: 42px;
   padding: 8px;
+  border-radius: 50%;
+  transition: background-color var(--t-fast) ease, transform var(--t-fast) var(--ease-smooth);
+}
+
+.hamburger:hover {
+  background: var(--bg-alt);
+}
+
+.hamburger:active {
+  transform: scale(0.9);
 }
 
 .hamburger span {
@@ -354,6 +592,19 @@ button {
   margin: 6px 0;
   background: var(--heading);
   border-radius: var(--radius-pill);
+  transition: transform var(--t-mid) var(--ease-smooth), opacity var(--t-fast) ease;
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
 }
 
 /* =========================================
@@ -361,17 +612,26 @@ button {
 ========================================= */
 
 .mobile-nav {
-  display: none;
+  display: flex;
+  flex-direction: column;
   position: fixed;
   inset: 0;
   background: var(--white);
   z-index: 2000;
   padding: 24px;
-  flex-direction: column;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(-14px) scale(0.99);
+  pointer-events: none;
+  transition: opacity var(--t-mid) var(--ease-smooth), transform var(--t-mid) var(--ease-smooth), visibility 0s linear var(--t-mid);
 }
 
 .mobile-nav.open {
-  display: flex;
+  visibility: visible;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  transition: opacity var(--t-mid) var(--ease-smooth), transform var(--t-mid) var(--ease-smooth);
 }
 
 .mobile-nav-top {
@@ -382,9 +642,18 @@ button {
 }
 
 .mobile-nav > a {
-  padding: 16px 0;
+  padding: 16px 4px;
+  border-radius: var(--radius-sm);
   border-bottom: 1px solid var(--border);
   font-weight: 600;
+  transition: background-color var(--t-fast) ease, color var(--t-fast) ease, padding-left var(--t-fast) var(--ease-smooth);
+}
+
+.mobile-nav > a:hover,
+.mobile-nav > a:active {
+  color: var(--primary);
+  padding-left: 10px;
+  background: var(--bg-alt);
 }
 
 .mobile-nav-close {
@@ -392,6 +661,18 @@ button {
   background: transparent;
   font-size: 2rem;
   color: var(--heading);
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  transition: background-color var(--t-fast) ease, transform var(--t-fast) var(--ease-smooth);
+}
+
+.mobile-nav-close:hover {
+  background: var(--bg-alt);
+}
+
+.mobile-nav-close:active {
+  transform: scale(0.88) rotate(90deg);
 }
 
 .mobile-nav .nav-actions {
@@ -409,7 +690,8 @@ button {
   background:
     radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.08), transparent 30%),
     radial-gradient(circle at 90% 10%, rgba(20, 184, 166, 0.08), transparent 30%),
-    linear-gradient(180deg, #0b1324, #080d18);
+    linear-gradient(180deg, var(--hero-grad-1), var(--hero-grad-2));
+  transition: background-color var(--t-mid) var(--ease-smooth);
 }
 
 .hero-content {
@@ -540,6 +822,7 @@ button {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 18px;
+  align-items: stretch;
 }
 
 .category-card {
@@ -548,13 +831,20 @@ button {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  transition: 0.2s ease;
+  transition: transform var(--t-fast) var(--ease-smooth), box-shadow var(--t-mid) var(--ease-smooth), border-color var(--t-mid) var(--ease-smooth);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .category-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-md);
   border-color: rgba(59, 130, 246, 0.45);
+}
+
+.category-card:active {
+  transform: translateY(-1px) scale(0.98);
 }
 
 .category-icon {
@@ -588,6 +878,7 @@ button {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 22px;
+  align-items: stretch;
 }
 
 .freelancer-card {
@@ -596,7 +887,10 @@ button {
   border-radius: var(--radius-md);
   padding: 22px;
   box-shadow: var(--shadow-sm);
-  transition: 0.2s ease;
+  transition: transform var(--t-fast) var(--ease-smooth), box-shadow var(--t-mid) var(--ease-smooth), border-color var(--t-mid) var(--ease-smooth);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .freelancer-card:hover {
@@ -616,7 +910,7 @@ button {
   height: 58px;
   border-radius: 50%;
   object-fit: cover;
-  background: #1c2946;
+  background: var(--avatar-fallback);
 }
 
 .freelancer-card h3 {
@@ -669,7 +963,7 @@ button {
 }
 
 .freelancer-card-footer {
-  margin-top: 20px;
+  margin-top: auto;
   padding-top: 16px;
   border-top: 1px solid var(--border);
   display: flex;
@@ -1719,7 +2013,7 @@ button {
   position: sticky;
   top: 95px;
   text-align: center;
-  background: linear-gradient(180deg, var(--white), #0b1526);
+  background: linear-gradient(180deg, var(--white), var(--sidebar-fade));
 }
 
 .sidebar-price .amount {
@@ -1768,7 +2062,7 @@ button {
   padding: 75px 0 65px;
   background:
     radial-gradient(circle at 85% 20%, rgba(37,99,235,0.08), transparent 30%),
-    linear-gradient(180deg, #0b1324, #080d18);
+    linear-gradient(180deg, var(--hero-grad-1), var(--hero-grad-2));
   border-bottom: 1px solid var(--border);
 }
 
@@ -1843,6 +2137,8 @@ button {
   border-radius: var(--radius-md);
   padding: 22px;
   box-shadow: var(--shadow-sm);
+  max-height: calc(100vh - 115px);
+  overflow-y: auto;
 }
 
 .filter-header {
@@ -1865,10 +2161,44 @@ button {
   font-weight: 700;
   cursor: pointer;
   padding: 2px 0;
+  transition: opacity var(--t-fast) ease, transform var(--t-fast) var(--ease-smooth);
 }
 
 .filters-clear:hover {
   text-decoration: underline;
+}
+
+.filters-clear:active {
+  transform: scale(0.94);
+}
+
+/* Grupe filtera (Kategorija / Ocena / Budžet) */
+
+.filter-group {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.filter-group:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.filter-group-title {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.filter-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .filter-option {
@@ -1880,12 +2210,16 @@ button {
   cursor: pointer;
   color: var(--text-soft);
   font-size: 0.88rem;
-  transition: 0.15s ease;
+  transition: background-color var(--t-fast) var(--ease-smooth), color var(--t-fast) var(--ease-smooth), transform var(--t-fast) var(--ease-smooth), opacity var(--t-mid) ease;
 }
 
 .filter-option:hover {
   background: var(--bg);
   color: var(--heading);
+}
+
+.filter-option:active {
+  transform: scale(0.98);
 }
 
 .filter-option:has(input:checked) {
@@ -1910,6 +2244,9 @@ button {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 600;
+  min-width: 18px;
+  text-align: right;
+  transition: color var(--t-fast) ease, transform var(--t-fast) var(--ease-smooth);
 }
 
 .filter-option:has(input:checked) .filter-option-count {
@@ -1918,6 +2255,103 @@ button {
 
 .filter-option.is-empty {
   opacity: 0.45;
+}
+
+/* Pilule za Ocenu i Budžet — bez oštrih ivica, glatki prelazi */
+
+.filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.filter-pill {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 7px 13px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease-smooth), border-color var(--t-fast) var(--ease-smooth), color var(--t-fast) var(--ease-smooth), transform var(--t-fast) var(--ease-smooth);
+}
+
+.filter-pill:hover {
+  border-color: var(--primary);
+  color: var(--heading);
+}
+
+.filter-pill:active {
+  transform: scale(0.94);
+}
+
+.filter-pill.active {
+  background: var(--gradient);
+  border-color: transparent;
+  color: white;
+}
+
+/* Aktivni filteri prikazani kao "čipovi" iznad rezultata */
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 22px;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height var(--t-mid) var(--ease-smooth), opacity var(--t-mid) ease, margin var(--t-mid) ease;
+}
+
+.active-filters.show {
+  max-height: 200px;
+  opacity: 1;
+}
+
+.active-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--primary);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  padding: 6px 8px 6px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  animation: chipIn 0.3s var(--ease-smooth);
+}
+
+@keyframes chipIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.active-filter-chip button {
+  border: 0;
+  background: rgba(59, 130, 246, 0.18);
+  color: var(--primary);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  line-height: 1;
+  transition: background-color var(--t-fast) ease, transform var(--t-fast) var(--ease-smooth);
+}
+
+.active-filter-chip button:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.active-filter-chip button:active {
+  transform: scale(0.85);
 }
 
 /* REZULTATI */
@@ -1958,6 +2392,17 @@ button {
   border: 1px dashed var(--border);
   border-radius: var(--radius-md);
   background: var(--bg);
+  display: none;
+  animation: fadeInSoft var(--t-mid) var(--ease-smooth);
+}
+
+.empty-state.show {
+  display: block;
+}
+
+@keyframes fadeInSoft {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .empty-icon {
@@ -2596,11 +3041,13 @@ button {
 
   .filters {
     position: static;
+    max-height: none;
   }
 
-  .filters form {
+  .filter-options {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
   }
 
   .testimonials-grid {
@@ -2659,7 +3106,7 @@ button {
     grid-template-columns: 1fr;
   }
 
-  .filters form {
+  .filter-options {
     grid-template-columns: 1fr;
   }
 

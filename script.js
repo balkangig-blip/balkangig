@@ -166,15 +166,125 @@ function filterOptionHTML(cat) {
   `;
 }
 
+/* Opcije za pilule (Ocena / Budžet) u finijem filtriranju */
+const RATING_PILLS = [
+  { value: "0", label: "Sve" },
+  { value: "4.5", label: "4.5+ ★" },
+  { value: "4.8", label: "4.8+ ★" },
+  { value: "4.9", label: "4.9+ ★" },
+];
+
+const BUDGET_PILLS = [
+  { value: "all", label: "Sve" },
+  { value: "0-50", label: "Do 50€" },
+  { value: "50-150", label: "50–150€" },
+  { value: "150-999999", label: "150€+" },
+];
+
+function pillsHTML(group, options) {
+  return options.map((o, i) => `
+    <button type="button" class="filter-pill${i === 0 ? " active" : ""}" data-group="${group}" data-value="${o.value}">
+      ${o.label}
+    </button>
+  `).join("");
+}
+
 /* ---------- Mobilni meni ---------- */
 function initMobileNav() {
   const btn = document.getElementById("hamburgerBtn");
   const drawer = document.getElementById("mobileNav");
   const closeBtn = document.getElementById("mobileNavClose");
   if (!btn || !drawer) return;
-  btn.addEventListener("click", () => drawer.classList.add("open"));
-  closeBtn.addEventListener("click", () => drawer.classList.remove("open"));
-  drawer.querySelectorAll("a").forEach(a => a.addEventListener("click", () => drawer.classList.remove("open")));
+
+  function open() {
+    drawer.classList.add("open");
+    btn.classList.add("active");
+    btn.setAttribute("aria-expanded", "true");
+  }
+  function close() {
+    drawer.classList.remove("open");
+    btn.classList.remove("active");
+    btn.setAttribute("aria-expanded", "false");
+  }
+
+  btn.addEventListener("click", open);
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  drawer.querySelectorAll("a").forEach(a => a.addEventListener("click", close));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+}
+
+/* ---------- Tema (svetla / tamna) ---------- */
+const THEME_KEY = "bg_theme";
+
+function applyTheme(theme) {
+  if (theme === "light") {
+    document.documentElement.setAttribute("data-theme", "light");
+  } else {
+    document.documentElement.removeAttribute("data-theme");
+  }
+}
+
+function initThemeToggle() {
+  const toggles = document.querySelectorAll(".theme-toggle");
+  if (!toggles.length) return;
+
+  let current = "dark";
+  try {
+    current = localStorage.getItem(THEME_KEY) || "dark";
+  } catch (e) { /* localStorage nedostupan */ }
+  applyTheme(current);
+
+  toggles.forEach(btn => {
+    btn.setAttribute("aria-pressed", current === "light" ? "true" : "false");
+    btn.addEventListener("click", () => {
+      current = current === "light" ? "dark" : "light";
+      applyTheme(current);
+      try { localStorage.setItem(THEME_KEY, current); } catch (e) { /* ignoriši */ }
+      toggles.forEach(t => t.setAttribute("aria-pressed", current === "light" ? "true" : "false"));
+    });
+  });
+}
+
+/* ---------- Animacije na klik (ripple / "talas") ---------- */
+function spawnRipple(el, x, y, dark) {
+  const rect = el.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height) * 1.4;
+  const ripple = document.createElement("span");
+  ripple.className = "ripple" + (dark ? " ripple-dark" : "");
+  ripple.style.width = ripple.style.height = size + "px";
+  ripple.style.left = (x - rect.left - size / 2) + "px";
+  ripple.style.top = (y - rect.top - size / 2) + "px";
+
+  const hadPosition = el.classList.contains("ripple-host") || getComputedStyle(el).position !== "static";
+  if (!hadPosition) el.classList.add("ripple-host");
+
+  el.appendChild(ripple);
+  ripple.addEventListener("animationend", () => {
+    ripple.remove();
+    if (!hadPosition) el.classList.remove("ripple-host");
+  });
+}
+
+function initClickAnimations() {
+  const RIPPLE_SELECTOR = [
+    ".btn", "button:not(.hamburger):not(.mobile-nav-close)",
+    ".cat-card", ".category-card", ".freelancer-card",
+    ".filter-option", ".filter-pill", ".choice-card",
+    ".theme-toggle", ".active-filter-chip button"
+  ].join(", ");
+
+  document.addEventListener("click", (e) => {
+    const target = e.target.closest(RIPPLE_SELECTOR);
+    if (!target) return;
+    const dark = target.matches(".btn-light, .btn-outline, .filter-pill, .cat-card, .category-card, .freelancer-card, .theme-toggle, .filter-option");
+    spawnRipple(target, e.clientX || 0, e.clientY || 0, dark);
+
+    target.classList.remove("click-pop");
+    void target.offsetWidth;
+    target.classList.add("click-pop");
+  });
 }
 
 /* ---------- Scroll reveal ---------- */
@@ -224,58 +334,156 @@ function initListingPage() {
   const resultCount = document.getElementById("resultCount");
   const emptyState = document.getElementById("emptyState");
   const searchInput = document.getElementById("listingSearch");
+  const activeFiltersRow = document.getElementById("activeFilters");
 
-  // Generiši filtere za usluge iz CATEGORIES (umesto ručno pisanih checkbox-ova)
-  filtersForm.innerHTML = CATEGORIES.map(filterOptionHTML).join("");
+  // Generiši prefinjene filtere: Kategorija (checkbox-ovi), Ocena i Budžet (pilule)
+  filtersForm.innerHTML = `
+    <div class="filter-group">
+      <div class="filter-group-title">Kategorija</div>
+      <div class="filter-options">${CATEGORIES.map(filterOptionHTML).join("")}</div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">Minimalna ocena</div>
+      <div class="filter-pills" data-group-wrap="ocena">${pillsHTML("ocena", RATING_PILLS)}</div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">Budžet</div>
+      <div class="filter-pills" data-group-wrap="budzet">${pillsHTML("budzet", BUDGET_PILLS)}</div>
+    </div>
+  `;
 
   if (searchInput && params.get("q")) searchInput.value = params.get("q");
 
+  function activePill(group) {
+    return filtersForm.querySelector(`.filter-pill.active[data-group="${group}"]`);
+  }
+
   function getState() {
     const checked = Array.from(filtersForm.querySelectorAll('input[name="kategorija"]:checked')).map(i => i.value);
+    const ratingPill = activePill("ocena");
+    const budgetPill = activePill("budzet");
     return {
       query: (searchInput?.value || "").toLowerCase().trim(),
       categories: checked,
-      sort: sortSelect ? sortSelect.value : "preporuceno"
+      sort: sortSelect ? sortSelect.value : "preporuceno",
+      minRating: ratingPill ? parseFloat(ratingPill.dataset.value) : 0,
+      budget: budgetPill ? budgetPill.dataset.value : "all"
     };
   }
 
-  // Ažurira brojeve pored svake usluge prema trenutnoj pretrazi (živo filtriranje),
+  function matchesFilters(f, state) {
+    const matchesQuery = !state.query ||
+      f.name.toLowerCase().includes(state.query) ||
+      f.role.toLowerCase().includes(state.query) ||
+      f.tags.join(" ").toLowerCase().includes(state.query) ||
+      f.location.toLowerCase().includes(state.query);
+    const matchesCategory = state.categories.length === 0 || state.categories.includes(f.category);
+    const matchesRating = !state.minRating || f.rating >= state.minRating;
+    let matchesBudget = true;
+    if (state.budget && state.budget !== "all") {
+      const [min, max] = state.budget.split("-").map(Number);
+      const price = parsePrice(f.price);
+      matchesBudget = price >= min && price <= max;
+    }
+    return matchesQuery && matchesCategory && matchesRating && matchesBudget;
+  }
+
+  // Ažurira brojeve pored svake usluge prema trenutnom stanju filtera (živo filtriranje),
   // i vizuelno "zatamni" usluge koje trenutno nemaju nijedan rezultat
-  function updateFilterCounts(query) {
+  function updateFilterCounts(state) {
     filtersForm.querySelectorAll(".filter-option").forEach(label => {
       const catId = label.dataset.cat;
       const count = FREELANCERS.filter(f => {
-        const matchesQuery = !query ||
-          f.name.toLowerCase().includes(query) ||
-          f.role.toLowerCase().includes(query) ||
-          f.tags.join(" ").toLowerCase().includes(query);
-        return matchesQuery && f.category === catId;
+        const stateWithoutThisCat = { ...state, categories: [] };
+        return matchesFilters(f, stateWithoutThisCat) && f.category === catId;
       }).length;
-      label.querySelector(".filter-option-count").textContent = count;
+      const countEl = label.querySelector(".filter-option-count");
+      if (countEl.textContent !== String(count)) {
+        countEl.textContent = count;
+        countEl.classList.remove("click-pop");
+        void countEl.offsetWidth;
+        countEl.classList.add("click-pop");
+      }
       label.classList.toggle("is-empty", count === 0);
     });
   }
 
-  function render() {
-    const { query, categories, sort } = getState();
-    let list = FREELANCERS.filter(f => {
-      const matchesQuery = !query ||
-        f.name.toLowerCase().includes(query) ||
-        f.role.toLowerCase().includes(query) ||
-        f.tags.join(" ").toLowerCase().includes(query);
-      const matchesCategory = categories.length === 0 || categories.includes(f.category);
-      return matchesQuery && matchesCategory;
-    });
+  const CATEGORY_LABELS = Object.fromEntries(CATEGORIES.map(c => [c.id, c.name]));
 
-    if (sort === "ocena") list.sort((a, b) => b.rating - a.rating);
-    if (sort === "projekti") list.sort((a, b) => b.done - a.done);
+  function renderActiveChips(state) {
+    if (!activeFiltersRow) return;
+    const chips = [];
+
+    if (state.query) {
+      chips.push({ label: `Pretraga: "${state.query}"`, onRemove: () => { searchInput.value = ""; } });
+    }
+    state.categories.forEach(catId => {
+      chips.push({
+        label: CATEGORY_LABELS[catId] || catId,
+        onRemove: () => {
+          const box = filtersForm.querySelector(`input[value="${catId}"]`);
+          if (box) box.checked = false;
+        }
+      });
+    });
+    if (state.minRating) {
+      chips.push({
+        label: `${state.minRating.toFixed(1)}+ ★`,
+        onRemove: () => setActivePill("ocena", "0")
+      });
+    }
+    if (state.budget && state.budget !== "all") {
+      const pill = activePill("budzet");
+      chips.push({
+        label: pill ? pill.textContent.trim() : "Budžet",
+        onRemove: () => setActivePill("budzet", "all")
+      });
+    }
+
+    if (chips.length === 0) {
+      activeFiltersRow.classList.remove("show");
+      activeFiltersRow.innerHTML = "";
+      return;
+    }
+
+    activeFiltersRow.innerHTML = chips.map((c, i) => `
+      <span class="active-filter-chip" data-chip-index="${i}">
+        ${c.label}
+        <button type="button" aria-label="Ukloni filter">×</button>
+      </span>
+    `).join("");
+    activeFiltersRow.classList.add("show");
+
+    activeFiltersRow.querySelectorAll(".active-filter-chip button").forEach((btn, i) => {
+      btn.addEventListener("click", () => {
+        chips[i].onRemove();
+        render();
+      });
+    });
+  }
+
+  function setActivePill(group, value) {
+    filtersForm.querySelectorAll(`.filter-pill[data-group="${group}"]`).forEach(p => {
+      p.classList.toggle("active", p.dataset.value === value);
+    });
+  }
+
+  function render() {
+    const state = getState();
+    let list = FREELANCERS.filter(f => matchesFilters(f, state));
+
+    if (state.sort === "ocena") list.sort((a, b) => b.rating - a.rating);
+    if (state.sort === "projekti") list.sort((a, b) => b.done - a.done);
 
     grid.innerHTML = list.map(freelancerCardHTML).join("");
     if (resultCount) resultCount.textContent = list.length;
     if (emptyState) emptyState.classList.toggle("show", list.length === 0);
 
-    updateFilterCounts(query);
-    if (clearBtn) clearBtn.hidden = categories.length === 0 && !query;
+    updateFilterCounts(state);
+    renderActiveChips(state);
+
+    const hasActiveFilters = state.categories.length > 0 || !!state.query || state.minRating > 0 || state.budget !== "all";
+    if (clearBtn) clearBtn.hidden = !hasActiveFilters;
 
     initScrollReveal();
   }
@@ -288,11 +496,20 @@ function initListingPage() {
   }
 
   filtersForm.addEventListener("change", render);
+  filtersForm.addEventListener("click", (e) => {
+    const pill = e.target.closest(".filter-pill");
+    if (!pill) return;
+    const group = pill.dataset.group;
+    setActivePill(group, pill.dataset.value);
+    render();
+  });
   if (sortSelect) sortSelect.addEventListener("change", render);
   if (searchInput) searchInput.addEventListener("input", render);
   if (clearBtn) {
     clearBtn.addEventListener("click", () => {
       filtersForm.querySelectorAll('input[name="kategorija"]:checked').forEach(i => i.checked = false);
+      setActivePill("ocena", "0");
+      setActivePill("budzet", "all");
       if (searchInput) searchInput.value = "";
       if (sortSelect) sortSelect.value = "preporuceno";
       render();
@@ -780,6 +997,8 @@ function initAuthToggle() {
 
 /* ---------- Init ---------- */
 document.addEventListener("DOMContentLoaded", () => {
+  initThemeToggle();
+  initClickAnimations();
   initMobileNav();
   initHeroSearch();
   populateHomepage();
