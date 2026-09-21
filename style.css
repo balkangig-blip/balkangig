@@ -1,32 +1,24 @@
 /* =========================================================
-   BALKANGIG — GLOBALNI CSS
-========================================================= */
+   BALKANGIG — NOVI DIZAJN
+   ========================================================= */
 
 :root {
   --primary: #2563eb;
   --primary-dark: #1d4ed8;
   --accent: #14b8a6;
-
   --navy: #0f172a;
   --text: #172033;
   --text-soft: #64748b;
-  --muted: #94a3b8;
-
   --white: #ffffff;
   --bg: #f8fafc;
-  --bg-alt: #f1f6ff;
-
+  --bg-alt: #eef4ff;
   --border: #e2e8f0;
 
-  --gradient: linear-gradient(
-    135deg,
-    #2563eb 0%,
-    #14b8a6 100%
-  );
+  --gradient: linear-gradient(135deg, #2563eb 0%, #14b8a6 100%);
 
-  --shadow-sm: 0 4px 15px rgba(15, 23, 42, .06);
-  --shadow-md: 0 12px 35px rgba(15, 23, 42, .10);
-  --shadow-lg: 0 25px 60px rgba(15, 23, 42, .14);
+  --shadow-sm: 0 4px 15px rgba(15, 23, 42, 0.06);
+  --shadow-md: 0 12px 35px rgba(15, 23, 42, 0.10);
+  --shadow-lg: 0 25px 60px rgba(15, 23, 42, 0.14);
 
   --radius-sm: 10px;
   --radius-md: 16px;
@@ -35,13 +27,14 @@
   --max-width: 1180px;
 }
 
-
 /* =========================================================
    RESET
-========================================================= */
+   ========================================================= */
 
 * {
   box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 html {
@@ -49,27 +42,15 @@ html {
 }
 
 body {
-  margin: 0;
   font-family: "Inter", sans-serif;
   color: var(--text);
   background: var(--white);
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 img {
   max-width: 100%;
-  display: block;
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
 }
 
 a {
@@ -77,11 +58,20 @@ a {
   text-decoration: none;
 }
 
-ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
+
+button {
+  cursor: pointer;
+}
+
+/* =========================================================
+   TYPOGRAPHY
+   ========================================================= */
 
 h1,
 h2,
@@ -92,103 +82,99 @@ h4 {
   line-height: 1.2;
 }
 
-h1,
-h2,
-h3,
-h4,
-p {
-  margin-top: 0;
+h1 {
+  font-size: clamp(2.4rem, 5vw, 4.4rem);
+  font-weight: 700;
 }
 
+h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+h4 {
+  font-size: 1rem;
+}
+
+p {
+  color: var(--text-soft);
+}
 
 /* =========================================================
    CONTAINER
-========================================================= */
+   ========================================================= */
 
 .container {
-  width: min(
-    calc(100% - 40px),
-    var(--max-width)
-  );
-
-  margin-inline: auto;
+  width: min(100% - 40px, var(--max-width));
+  margin: 0 auto;
 }
-
 
 /* =========================================================
    HEADER
-========================================================= */
+   ========================================================= */
 
 .site-header {
   position: sticky;
   top: 0;
   z-index: 1000;
-
-  background: rgba(255, 255, 255, .94);
-  backdrop-filter: blur(14px);
-
-  border-bottom: 1px solid rgba(226, 232, 240, .85);
+  width: 100%;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 .nav {
   min-height: 76px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  gap: 30px;
+  gap: 25px;
 }
 
-
 /* =========================================================
-   BRAND
-========================================================= */
+   BALKANGIG TEKST LOGO
+   ========================================================= */
 
 .brand {
   display: inline-flex;
   align-items: center;
-
   font-family: "Poppins", sans-serif;
-
   font-size: 1.65rem;
   font-weight: 700;
-
-  letter-spacing: -1px;
-
-  color: var(--primary);
-
+  letter-spacing: -0.8px;
+  color: var(--navy);
   white-space: nowrap;
 }
 
-.brand:hover {
-  color: var(--primary-dark);
+.brand span {
+  color: var(--primary);
 }
 
+/* Sakrij staru logo sliku */
+.brand img {
+  display: none !important;
+}
 
 /* =========================================================
    NAVIGATION
-========================================================= */
+   ========================================================= */
 
 .nav-links {
   display: flex;
   align-items: center;
   gap: 26px;
-
-  margin-left: auto;
 }
 
 .nav-links a {
   position: relative;
-
-  font-size: .92rem;
-  font-weight: 500;
-
   color: #475569;
-
-  padding: 27px 0;
-
-  transition: color .2s ease;
+  font-size: 0.92rem;
+  font-weight: 600;
+  transition: 0.2s ease;
 }
 
 .nav-links a:hover,
@@ -196,26 +182,22 @@ p {
   color: var(--primary);
 }
 
-.nav-links a.active::after {
+.nav-links a::after {
   content: "";
-
   position: absolute;
-
   left: 0;
-  right: 0;
-  bottom: 16px;
-
+  bottom: -8px;
+  width: 0;
   height: 2px;
-
-  border-radius: 10px;
-
   background: var(--primary);
+  border-radius: 10px;
+  transition: 0.2s ease;
 }
 
-
-/* =========================================================
-   NAV ACTIONS
-========================================================= */
+.nav-links a:hover::after,
+.nav-links a.active::after {
+  width: 100%;
+}
 
 .nav-actions {
   display: flex;
@@ -223,1045 +205,646 @@ p {
   gap: 10px;
 }
 
-
 /* =========================================================
    BUTTONS
-========================================================= */
+   ========================================================= */
 
 .btn {
+  min-height: 46px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  min-height: 46px;
-
   padding: 0 20px;
-
   border-radius: 12px;
-
   border: 1px solid transparent;
-
-  font-size: .92rem;
-  font-weight: 600;
-
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease,
-    background .2s ease,
-    border-color .2s ease,
-    color .2s ease;
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    background 0.2s ease, color 0.2s ease;
 }
 
 .btn:hover {
   transform: translateY(-2px);
 }
 
-.btn-sm {
-  min-height: 40px;
-  padding: 0 15px;
-  border-radius: 10px;
-  font-size: .85rem;
-}
-
 .btn-primary {
-  color: #fff;
-  background: var(--primary);
-
-  box-shadow: 0 8px 20px rgba(37, 99, 235, .18);
+  color: var(--white);
+  background: var(--gradient);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.22);
 }
 
 .btn-primary:hover {
-  color: #fff;
-  background: var(--primary-dark);
-
-  box-shadow: 0 12px 25px rgba(37, 99, 235, .25);
+  box-shadow: 0 15px 32px rgba(37, 99, 235, 0.30);
 }
 
 .btn-outline {
-  color: var(--navy);
-  background: #fff;
-  border-color: var(--border);
+  color: var(--primary);
+  background: var(--white);
+  border-color: #cbd5e1;
 }
 
 .btn-outline:hover {
-  color: var(--primary);
-  border-color: #bfdbfe;
-  background: #f8fbff;
+  background: #eff6ff;
+  border-color: var(--primary);
 }
 
 .btn-light {
   color: var(--primary);
-  background: #fff;
-  border-color: #fff;
+  background: var(--white);
+  border-color: var(--white);
 }
 
 .btn-light:hover {
-  color: var(--primary-dark);
-  background: #f8fafc;
+  background: #f1f5f9;
 }
 
+.btn-sm {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 0.85rem;
+}
+
+.btn-block {
+  width: 100%;
+}
 
 /* =========================================================
    HAMBURGER
-========================================================= */
+   ========================================================= */
 
 .hamburger {
   display: none;
-
   width: 44px;
   height: 44px;
-
-  padding: 9px;
-
   border: 1px solid var(--border);
   border-radius: 10px;
-
-  background: #fff;
+  background: var(--white);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .hamburger span {
-  display: block;
-
-  width: 100%;
+  width: 20px;
   height: 2px;
-
-  margin: 5px 0;
-
-  border-radius: 5px;
-
   background: var(--navy);
+  border-radius: 5px;
 }
-
 
 /* =========================================================
    MOBILE NAV
-========================================================= */
+   ========================================================= */
 
 .mobile-nav {
-  display: none;
-
   position: fixed;
-
   inset: 0;
-
   z-index: 2000;
-
-  padding: 22px;
-
-  background: #fff;
+  background: var(--white);
+  padding: 25px;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .mobile-nav.open {
-  display: block;
+  transform: translateX(0);
 }
 
 .mobile-nav-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  margin-bottom: 30px;
+  margin-bottom: 25px;
 }
 
 .mobile-nav > a:not(.brand) {
-  display: block;
-
-  padding: 15px 0;
-
-  border-bottom: 1px solid var(--border);
-
-  font-weight: 500;
+  padding: 15px;
+  border-radius: 10px;
+  font-weight: 600;
 }
 
-.mobile-nav .nav-actions {
-  margin-top: 25px;
-
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.mobile-nav .btn {
-  width: 100%;
+.mobile-nav > a:not(.brand):hover {
+  background: #eff6ff;
+  color: var(--primary);
 }
 
 .mobile-nav-close {
   width: 42px;
   height: 42px;
-
-  border: 1px solid var(--border);
+  border: 0;
+  background: #f1f5f9;
   border-radius: 10px;
-
-  background: #fff;
-
-  font-size: 25px;
+  font-size: 1.7rem;
 }
 
+.mobile-nav .nav-actions {
+  margin-top: 20px;
+  flex-direction: column;
+}
+
+.mobile-nav .nav-actions .btn {
+  width: 100%;
+}
 
 /* =========================================================
-   HERO — HOME
-========================================================= */
+   HERO
+   ========================================================= */
 
 .hero {
   position: relative;
-
   overflow: hidden;
-
-  padding: 105px 0 90px;
-
+  padding: 110px 0 90px;
   background:
-    radial-gradient(
-      circle at 85% 20%,
-      rgba(37, 99, 235, .12),
-      transparent 32%
-    ),
-    radial-gradient(
-      circle at 10% 90%,
-      rgba(20, 184, 166, .08),
-      transparent 28%
-    ),
-    linear-gradient(
-      180deg,
-      #f8fbff 0%,
-      #ffffff 100%
-    );
+    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.14), transparent 30%),
+    radial-gradient(circle at 90% 30%, rgba(20, 184, 166, 0.14), transparent 30%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
 }
 
 .hero-inner {
-  max-width: 900px;
   text-align: center;
+  max-width: 950px;
+  margin: auto;
 }
 
 .hero h1 {
-  max-width: 850px;
-
-  margin: 0 auto 22px;
-
-  font-size: clamp(
-    2.7rem,
-    6vw,
-    4.8rem
-  );
-
-  letter-spacing: -2.8px;
+  max-width: 900px;
+  margin: 0 auto 25px;
 }
 
-.hero .lead {
+.hero h1::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 5px;
+  margin: 25px auto 0;
+  border-radius: 10px;
+  background: var(--gradient);
+}
+
+.lead {
   max-width: 720px;
-
-  margin: 0 auto 32px;
-
+  margin: 0 auto;
+  font-size: 1.15rem;
   color: var(--text-soft);
-
-  font-size: 1.1rem;
-
-  line-height: 1.8;
 }
 
 .hero-ctas {
   display: flex;
-
   justify-content: center;
-  align-items: center;
-
-  flex-wrap: wrap;
-
   gap: 12px;
-
-  margin-bottom: 38px;
+  flex-wrap: wrap;
+  margin-top: 32px;
 }
 
-
 /* =========================================================
-   SEARCH BOX
-========================================================= */
+   SEARCH
+   ========================================================= */
 
 .search-box {
   max-width: 760px;
-
-  margin: 0 auto;
-
-  min-height: 64px;
-
+  min-height: 66px;
+  margin: 42px auto 0;
+  padding: 8px 8px 8px 20px;
   display: flex;
   align-items: center;
-
   gap: 12px;
-
-  padding: 8px 8px 8px 20px;
-
-  background: #fff;
-
+  background: var(--white);
   border: 1px solid var(--border);
-
-  border-radius: 17px;
-
+  border-radius: 18px;
   box-shadow: var(--shadow-md);
 }
 
 .search-box svg {
-  flex: 0 0 auto;
-
+  flex-shrink: 0;
   color: var(--text-soft);
 }
 
 .search-box input {
+  flex: 1;
   min-width: 0;
-  width: 100%;
-
   border: 0;
   outline: 0;
-
-  background: transparent;
-
   color: var(--text);
-
-  font-size: .95rem;
+  background: transparent;
 }
 
 .search-box input::placeholder {
   color: #94a3b8;
 }
 
+.search-box .btn {
+  flex-shrink: 0;
+}
 
 /* =========================================================
    HERO STATS
-========================================================= */
+   ========================================================= */
 
 .hero-stats {
-  display: flex;
-  justify-content: center;
-
-  flex-wrap: wrap;
-
-  gap: 45px;
-
-  margin-top: 45px;
+  margin-top: 48px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .hero-stats > div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 0 20px;
+  border-right: 1px solid var(--border);
+}
+
+.hero-stats > div:last-child {
+  border-right: 0;
 }
 
 .hero-stats strong {
-  color: var(--navy);
-
+  display: block;
   font-family: "Poppins", sans-serif;
-
-  font-size: 1.45rem;
+  font-size: 1.6rem;
+  color: var(--navy);
 }
 
 .hero-stats span {
   color: var(--text-soft);
-
-  font-size: .82rem;
+  font-size: 0.85rem;
 }
-
 
 /* =========================================================
    SECTIONS
-========================================================= */
+   ========================================================= */
 
 .section {
-  padding: 95px 0;
+  padding: 90px 0;
 }
 
 .section-tight {
-  padding: 65px 0;
+  padding: 35px 0 90px;
 }
 
 .bg-alt {
-  background: var(--bg-alt);
+  background: var(--bg);
 }
 
 .section-head {
-  max-width: 720px;
-
+  max-width: 760px;
   margin-bottom: 45px;
 }
 
 .section-head.center {
+  text-align: center;
   margin-left: auto;
   margin-right: auto;
+}
 
-  text-align: center;
+.section-head h2 {
+  margin-top: 8px;
+}
+
+.section-head p {
+  margin-top: 14px;
 }
 
 .kicker {
   display: inline-block;
-
-  margin-bottom: 10px;
-
+  margin-bottom: 5px;
   color: var(--primary);
-
-  font-size: .78rem;
-
-  font-weight: 700;
-
-  letter-spacing: .08em;
-
+  font-size: 0.78rem;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
-
-.section-head h2 {
-  margin-bottom: 14px;
-
-  font-size: clamp(
-    2rem,
-    4vw,
-    3rem
-  );
-
-  letter-spacing: -1.5px;
-}
-
-.section-head p {
-  margin-bottom: 0;
-
-  color: var(--text-soft);
-
-  line-height: 1.7;
-}
-
 
 /* =========================================================
    CATEGORIES
-========================================================= */
+   ========================================================= */
 
 .cat-grid {
   display: grid;
-
-  grid-template-columns: repeat(
-    4,
-    1fr
-  );
-
+  grid-template-columns: repeat(4, 1fr);
   gap: 18px;
 }
 
-.category-card {
+.cat-card {
   display: block;
-
-  padding: 25px;
-
+  padding: 28px;
+  background: var(--white);
   border: 1px solid var(--border);
-
-  border-radius: 18px;
-
-  background: #fff;
-
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease,
-    border-color .2s ease;
+  transition: 0.25s ease;
 }
 
-.category-card:hover {
-  transform: translateY(-5px);
-
-  border-color: #bfdbfe;
-
-  box-shadow: var(--shadow-md);
+.cat-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(37, 99, 235, 0.25);
+  box-shadow: var(--shadow-lg);
 }
 
-.category-icon {
-  width: 50px;
-  height: 50px;
-
+.cat-icon {
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-
-  margin-bottom: 18px;
-
-  border-radius: 14px;
-
+  margin-bottom: 20px;
   background: #eff6ff;
-
-  font-size: 25px;
+  border-radius: 14px;
+  font-size: 1.7rem;
 }
 
-.category-card h3 {
+.cat-card h3 {
   margin-bottom: 7px;
-
-  font-size: 1rem;
 }
 
-.category-card p {
-  margin: 0;
-
-  color: var(--text-soft);
-
-  font-size: .84rem;
+.cat-card p {
+  font-size: 0.9rem;
 }
 
+.cat-count {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
 
 /* =========================================================
-   FREELANCER CARDS
-========================================================= */
+   FREELANCERS
+   ========================================================= */
 
 .freelancer-grid {
   display: grid;
-
-  grid-template-columns: repeat(
-    3,
-    1fr
-  );
-
-  gap: 22px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
 .freelancer-card {
-  overflow: hidden;
-
-  background: #fff;
-
+  background: var(--white);
   border: 1px solid var(--border);
-
-  border-radius: 20px;
-
+  border-radius: var(--radius-md);
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
-
-  transition:
-    transform .2s ease,
-    box-shadow .2s ease,
-    border-color .2s ease;
+  transition: 0.25s ease;
 }
 
 .freelancer-card:hover {
   transform: translateY(-5px);
-
-  border-color: #bfdbfe;
-
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-lg);
 }
 
 .freelancer-card-top {
-  display: flex;
-  align-items: center;
-
-  gap: 15px;
-
-  padding: 22px 22px 15px;
+  padding: 25px;
 }
 
 .freelancer-avatar {
-  width: 62px;
-  height: 62px;
-
-  flex: 0 0 auto;
-
+  width: 68px;
+  height: 68px;
   border-radius: 50%;
-
   object-fit: cover;
-
-  background: #e2e8f0;
+  border: 4px solid #eff6ff;
 }
 
-.freelancer-card h3 {
-  margin-bottom: 4px;
-
-  font-size: 1.02rem;
+.freelancer-name {
+  margin-top: 14px;
 }
 
 .freelancer-role {
   color: var(--text-soft);
-
-  font-size: .83rem;
-}
-
-.freelancer-card-body {
-  padding: 0 22px 22px;
-}
-
-.freelancer-location {
-  color: var(--text-soft);
-
-  font-size: .82rem;
-
-  margin-bottom: 10px;
-}
-
-.freelancer-description {
-  color: #475569;
-
-  font-size: .88rem;
-
-  line-height: 1.6;
-
-  margin-bottom: 15px;
+  font-size: 0.88rem;
 }
 
 .freelancer-meta {
   display: flex;
-
-  align-items: center;
   justify-content: space-between;
-
   gap: 10px;
-
-  padding-top: 15px;
-
-  border-top: 1px solid var(--border);
+  margin-top: 15px;
 }
 
 .freelancer-rating {
-  font-size: .85rem;
-  font-weight: 600;
+  color: #f59e0b;
+  font-weight: 700;
 }
 
 .freelancer-price {
   color: var(--primary);
-
-  font-size: .9rem;
-
-  font-weight: 700;
+  font-weight: 800;
 }
 
-.freelancer-skills {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 7px;
-
-  margin-bottom: 17px;
-}
-
-.skill-tag {
-  padding: 5px 9px;
-
-  border-radius: 7px;
-
-  background: #f1f5f9;
-
-  color: #475569;
-
-  font-size: .72rem;
-
-  font-weight: 500;
+.freelancer-card-bottom {
+  padding: 18px 25px;
+  border-top: 1px solid var(--border);
+  background: #fafcff;
 }
 
 .grid-cta {
   display: flex;
   justify-content: center;
-
-  margin-top: 35px;
+  margin-top: 40px;
 }
-
 
 /* =========================================================
    STEPS
-========================================================= */
+   ========================================================= */
 
 .steps {
   display: grid;
-
-  grid-template-columns: repeat(
-    4,
-    1fr
-  );
-
-  gap: 20px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
 }
 
 .step-card {
-  padding: 28px;
-
+  position: relative;
+  padding: 30px 25px;
+  background: var(--white);
   border: 1px solid var(--border);
-
-  border-radius: 18px;
-
-  background: #fff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .step-num {
-  width: 40px;
-  height: 40px;
-
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-
   margin-bottom: 20px;
-
   border-radius: 50%;
-
-  background: #eff6ff;
-
-  color: var(--primary);
-
-  font-weight: 700;
-}
-
-.step-card h3 {
-  margin-bottom: 9px;
-
-  font-size: 1rem;
+  color: var(--white);
+  background: var(--gradient);
+  font-weight: 800;
 }
 
 .step-card p {
-  margin: 0;
-
-  color: var(--text-soft);
-
-  font-size: .88rem;
-
-  line-height: 1.65;
+  margin-top: 10px;
+  font-size: 0.9rem;
 }
 
-
 /* =========================================================
-   SPLIT SECTION
-========================================================= */
+   SPLIT
+   ========================================================= */
 
 .split {
   display: grid;
-
-  grid-template-columns:
-    minmax(0, 1fr)
-    minmax(0, 1fr);
-
-  gap: 65px;
-
+  grid-template-columns: 1fr 1fr;
+  gap: 70px;
   align-items: center;
 }
 
-.split h2 {
-  margin-bottom: 18px;
-
-  font-size: clamp(
-    2rem,
-    4vw,
-    3rem
-  );
-
-  letter-spacing: -1.5px;
-}
-
-.split p {
-  color: var(--text-soft);
-
-  line-height: 1.75;
+.split > div:first-child p {
+  margin-top: 18px;
 }
 
 .split .btn {
-  margin-top: 12px;
+  margin-top: 25px;
 }
 
 .split-media {
-  min-height: 350px;
-
+  padding: 45px;
+  min-height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-
-  padding: 45px;
-
-  border-radius: 25px;
-
-  background:
-    radial-gradient(
-      circle at 80% 20%,
-      rgba(20,184,166,.35),
-      transparent 35%
-    ),
-    var(--gradient);
-
-  color: #fff;
-
+  border-radius: var(--radius-lg);
+  color: var(--white);
+  background: var(--gradient);
   box-shadow: var(--shadow-lg);
 }
 
 .split-media h3 {
-  color: #fff;
-
+  color: var(--white);
   font-size: 1.8rem;
-
-  margin-bottom: 12px;
 }
 
 .split-media p {
-  color: rgba(255,255,255,.82);
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 12px;
 }
 
 .mini-stat-row {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 35px;
-
-  margin-top: 25px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin-top: 35px;
 }
 
 .mini-stat {
-  display: flex;
-  flex-direction: column;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 .mini-stat strong {
-  font-family: "Poppins", sans-serif;
-
-  font-size: 1.7rem;
+  display: block;
+  font-size: 1.5rem;
 }
 
 .mini-stat span {
-  color: rgba(255,255,255,.72);
-
-  font-size: .78rem;
+  display: block;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.75rem;
 }
-
 
 /* =========================================================
    TESTIMONIALS
-========================================================= */
+   ========================================================= */
 
 .testi-grid {
   display: grid;
-
-  grid-template-columns: repeat(
-    3,
-    1fr
-  );
-
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
 .testi-card {
-  padding: 28px;
-
+  padding: 30px;
   border: 1px solid var(--border);
-
-  border-radius: 18px;
-
-  background: #fff;
-
+  border-radius: var(--radius-md);
+  background: var(--white);
   box-shadow: var(--shadow-sm);
 }
 
 .testi-quote {
-  color: #475569;
-
-  line-height: 1.7;
-
-  font-size: .92rem;
-
-  margin-bottom: 25px;
+  color: var(--text);
+  font-size: 0.95rem;
 }
 
 .testi-person {
   display: flex;
   align-items: center;
-
   gap: 12px;
+  margin-top: 25px;
 }
 
 .testi-person img {
-  width: 45px;
-  height: 45px;
-
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-
-  object-fit: cover;
 }
 
-.testi-person strong {
+.testi-person strong,
+.testi-person span {
   display: block;
-
-  font-size: .88rem;
 }
 
 .testi-person span {
-  display: block;
-
   color: var(--text-soft);
-
-  font-size: .75rem;
+  font-size: 0.75rem;
 }
-
 
 /* =========================================================
    CTA BANNER
-========================================================= */
+   ========================================================= */
 
-.section-tight .cta-banner {
-  padding: 45px 50px;
-
+.cta-banner {
+  padding: 55px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 30px;
-
-  border-radius: 24px;
-
+  border-radius: var(--radius-lg);
   background: var(--gradient);
-
-  color: #fff;
-
   box-shadow: var(--shadow-lg);
 }
 
 .cta-banner h2 {
-  margin-bottom: 8px;
-
-  color: #fff;
+  color: var(--white);
 }
 
 .cta-banner p {
-  margin: 0;
-
-  color: rgba(255,255,255,.78);
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .cta-banner .btn-outline {
-  color: #fff !important;
-
+  color: #ffffff !important;
   background: transparent !important;
-
-  border-color: rgba(255,255,255,.65) !important;
+  border-color: rgba(255, 255, 255, 0.65) !important;
 }
 
 .cta-banner .btn-outline:hover {
-  color: #fff !important;
-
-  background: rgba(255,255,255,.12) !important;
-
-  border-color: #fff !important;
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: #ffffff !important;
 }
-
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
-.site-footer {
-  padding: 65px 0 25px;
-
-  background: #0f172a;
-
-  color: #cbd5e1;
-}
-
-.site-footer .brand {
-  color: #fff;
-
-  margin-bottom: 15px;
-}
-
-.footer-grid {
-  display: grid;
-
-  grid-template-columns:
-    1.6fr
-    1fr
-    1fr
-    1fr;
-
-  gap: 50px;
-}
-
-.footer-brand p {
-  max-width: 350px;
-
-  color: #94a3b8;
-
-  font-size: .86rem;
-
-  line-height: 1.7;
-}
-
-.footer-col h4 {
-  margin-bottom: 18px;
-
-  color: #fff;
-
-  font-size: .9rem;
-}
-
-.footer-col li {
-  margin-bottom: 10px;
-}
-
-.footer-col a {
-  color: #94a3b8;
-
-  font-size: .84rem;
-
-  transition: color .2s ease;
-}
-
-.footer-col a:hover {
-  color: #fff;
-}
-
-.socials {
-  display: flex;
-
-  gap: 8px;
-
-  margin-top: 20px;
-}
-
-.socials a {
-  width: 34px;
-  height: 34px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border: 1px solid rgba(255,255,255,.12);
-
-  border-radius: 9px;
-
-  color: #cbd5e1;
-}
-
-.socials a:hover {
-  color: #fff;
-
-  background: rgba(255,255,255,.08);
-}
-
-.footer-bottom {
-  display: flex;
-  justify-content: space-between;
-
-  gap: 20px;
-
-  margin-top: 50px;
-  padding-top: 22px;
-
-  border-top: 1px solid rgba(255,255,255,.08);
-
-  color: #64748b;
-
-  font-size: .76rem;
-}
-
 
 /* =========================================================
    FORMS
-========================================================= */
+   ========================================================= */
+
+.form-page {
+  padding: 80px 0;
+  background: var(--bg);
+}
 
 .form-card {
-  max-width: 720px;
-
-  margin: 50px auto;
-
+  max-width: 780px;
+  margin: auto;
   padding: 40px;
-
-  background: #fff;
-
+  background: var(--white);
   border: 1px solid var(--border);
-
-  border-radius: 22px;
-
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
 }
 
@@ -1271,304 +854,671 @@ p {
 
 .field label {
   display: block;
-
   margin-bottom: 8px;
-
   color: var(--navy);
-
-  font-size: .86rem;
-
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .field input,
-.field select,
 .field textarea,
-select {
+.field select {
   width: 100%;
-
-  min-height: 48px;
-
-  padding: 0 14px;
-
-  border: 1px solid var(--border);
-
-  border-radius: 10px;
-
+  padding: 13px 15px;
+  border: 1px solid #cbd5e1;
+  border-radius: 11px;
   outline: none;
-
-  background: #fff;
-
+  background: var(--white);
   color: var(--text);
-
-  transition:
-    border-color .2s ease,
-    box-shadow .2s ease;
+  transition: 0.2s ease;
 }
 
 .field textarea {
   min-height: 130px;
-
-  padding-top: 12px;
-
   resize: vertical;
 }
 
 .field input:focus,
-.field select:focus,
 .field textarea:focus,
-select:focus {
-  border-color: #93c5fd;
-
-  box-shadow:
-    0 0 0 4px rgba(37,99,235,.08);
-}
-
-.form-row {
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, 1fr);
-
-  gap: 18px;
+.field select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
 }
 
 .form-success {
   display: none;
-
+  padding: 15px;
   margin-bottom: 20px;
-
-  padding: 14px 16px;
-
   border-radius: 10px;
-
   background: #ecfdf5;
-
   color: #047857;
-
   border: 1px solid #a7f3d0;
-
-  font-size: .88rem;
 }
 
-.form-success.show {
-  display: block;
+/* =========================================================
+   FORM TABS
+   ========================================================= */
+
+.forms-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 25px;
+  padding: 5px;
+  background: #f1f5f9;
+  border-radius: 12px;
 }
 
+.forms-tabs button {
+  flex: 1;
+  padding: 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-soft);
+  font-weight: 700;
+}
+
+.forms-tabs button.active {
+  color: var(--primary);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+}
 
 /* =========================================================
    AUTH
-========================================================= */
+   ========================================================= */
 
-.auth-page {
+.auth-wrap {
   min-height: calc(100vh - 76px);
-
+  padding: 80px 20px;
   display: flex;
   align-items: center;
-
-  padding: 70px 0;
-
+  justify-content: center;
   background:
-    radial-gradient(
-      circle at 20% 20%,
-      rgba(37,99,235,.08),
-      transparent 30%
-    ),
-    #f8fafc;
+    radial-gradient(circle at 20% 20%, rgba(37, 99, 235, 0.10), transparent 30%),
+    var(--bg);
 }
 
 .auth-card {
-  width: min(
-    100%,
-    470px
-  );
-
-  margin: auto;
-
-  padding: 38px;
-
-  background: #fff;
-
+  width: min(100%, 460px);
+  padding: 40px;
+  background: var(--white);
   border: 1px solid var(--border);
-
-  border-radius: 22px;
-
-  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
 }
 
 .auth-card h1 {
-  margin-bottom: 10px;
-
   font-size: 2rem;
-}
-
-.auth-card > p {
-  color: var(--text-soft);
-
-  margin-bottom: 28px;
-}
-
-.auth-footer {
-  margin-top: 25px;
-
   text-align: center;
+}
 
+.auth-sub {
+  text-align: center;
+  margin: 10px 0 30px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 25px 0;
   color: var(--text-soft);
-
-  font-size: .85rem;
+  text-align: center;
 }
 
-.auth-footer a {
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--border);
+}
+
+.auth-switch {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.auth-switch a {
   color: var(--primary);
-
-  font-weight: 600;
+  font-weight: 700;
 }
-
 
 /* =========================================================
    ROLE TOGGLE
-========================================================= */
+   ========================================================= */
 
 .role-toggle {
   display: grid;
-
-  grid-template-columns: repeat(2, 1fr);
-
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
-
   margin-bottom: 25px;
-
   padding: 5px;
-
   background: #f1f5f9;
-
   border-radius: 12px;
 }
 
 .role-toggle button {
-  min-height: 42px;
-
+  padding: 12px;
   border: 0;
-
-  border-radius: 8px;
-
+  border-radius: 9px;
   background: transparent;
-
   color: var(--text-soft);
-
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .role-toggle button.active {
-  background: #fff;
-
+  background: var(--white);
   color: var(--primary);
-
   box-shadow: var(--shadow-sm);
 }
 
+/* =========================================================
+   LISTING PAGE
+   ========================================================= */
+
+.listing-page {
+  padding: 70px 0 90px;
+  background: var(--bg);
+}
+
+.listing-layout {
+  display: grid;
+  grid-template-columns: 270px 1fr;
+  gap: 30px;
+}
+
+.filters {
+  align-self: start;
+  position: sticky;
+  top: 100px;
+  padding: 25px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.filters h3 {
+  margin-bottom: 20px;
+}
+
+.filter-group {
+  margin-bottom: 25px;
+}
+
+.filter-group label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 0;
+  color: var(--text-soft);
+  font-size: 0.88rem;
+}
+
+.filter-group input[type="checkbox"] {
+  accent-color: var(--primary);
+}
+
+.listing-main {
+  min-width: 0;
+}
+
+.listing-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.listing-toolbar select,
+#listingSearch {
+  padding: 11px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--white);
+  outline: none;
+}
+
+#listingSearch {
+  width: 100%;
+}
+
+.listing-search {
+  margin-bottom: 20px;
+}
+
+.empty-state {
+  padding: 50px;
+  text-align: center;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
 
 /* =========================================================
-   LISTING — NOVA STRANICA
-========================================================= */
+   PROFILE
+   ========================================================= */
+
+.profile-page {
+  padding: 70px 0 90px;
+  background: var(--bg);
+}
+
+.profile-hero {
+  padding: 35px;
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-avatar {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 25px;
+  margin-top: 25px;
+}
+
+.profile-card {
+  padding: 30px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 25px;
+}
+
+.profile-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+}
+
+.profile-sidebar {
+  align-self: start;
+  position: sticky;
+  top: 100px;
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill {
+  padding: 7px 11px;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: var(--primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* =========================================================
+   FOOTER
+   ========================================================= */
+
+.site-footer {
+  background: #0f172a;
+  color: white;
+  padding: 70px 0 25px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 45px;
+}
+
+.site-footer .brand {
+  color: white;
+}
+
+.site-footer .brand span {
+  color: #60a5fa;
+}
+
+.footer-brand p {
+  max-width: 350px;
+  margin-top: 18px;
+  color: #94a3b8;
+  font-size: 0.88rem;
+}
+
+.footer-col h4 {
+  color: white;
+  margin-bottom: 18px;
+}
+
+.footer-col ul {
+  list-style: none;
+}
+
+.footer-col li {
+  margin-bottom: 10px;
+}
+
+.footer-col a {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  transition: 0.2s ease;
+}
+
+.footer-col a:hover {
+  color: white;
+}
+
+.socials {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.socials a {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #334155;
+  border-radius: 9px;
+}
+
+.footer-bottom {
+  margin-top: 55px;
+  padding-top: 22px;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  border-top: 1px solid #1e293b;
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* =========================================================
+   RESPONSIVE — TABLET
+   ========================================================= */
+
+@media (max-width: 1050px) {
+  .nav-links {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .freelancer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .listing-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .filters {
+    position: static;
+  }
+
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-sidebar {
+    position: static;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE — MOBILE
+   ========================================================= */
+
+@media (max-width: 720px) {
+  .container {
+    width: min(100% - 28px, var(--max-width));
+  }
+
+  .nav {
+    min-height: 68px;
+  }
+
+  .nav-actions {
+    display: none;
+  }
+
+  .brand {
+    font-size: 1.45rem;
+  }
+
+  .hero {
+    padding: 70px 0 60px;
+  }
+
+  .hero h1 {
+    font-size: 2.35rem;
+  }
+
+  .lead {
+    font-size: 1rem;
+  }
+
+  .search-box {
+    min-height: auto;
+    padding: 10px;
+    flex-wrap: wrap;
+  }
+
+  .search-box input {
+    min-width: calc(100% - 45px);
+    height: 45px;
+  }
+
+  .search-box .btn {
+    width: 100%;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .hero-stats > div {
+    padding: 0;
+    border-right: 0;
+  }
+
+  .section {
+    padding: 65px 0;
+  }
+
+  .cat-grid,
+  .freelancer-grid,
+  .steps,
+  .testi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .split {
+    grid-template-columns: 1fr;
+    gap: 35px;
+  }
+
+  .mini-stat-row {
+    grid-template-columns: 1fr;
+  }
+
+  .cta-banner {
+    padding: 35px 25px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .form-card,
+  .auth-card {
+    padding: 28px 20px;
+  }
+
+  .profile-hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .profile-avatar {
+    width: 90px;
+    height: 90px;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+  }
+
+  .listing-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* =========================================================
+   VERY SMALL MOBILE
+   ========================================================= */
+
+@media (max-width: 420px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .hero-ctas {
+    flex-direction: column;
+  }
+
+  .hero-ctas .btn {
+    width: 100%;
+  }
+
+  .auth-card h1 {
+    font-size: 1.7rem;
+  }
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.brand img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+/* =========================================
+   PRONADJI FREELANCERA - NOVI DIZAJN
+========================================= */
 
 .freelancer-hero {
   padding: 85px 0 70px;
-
   background:
-    radial-gradient(
-      circle at 85% 20%,
-      rgba(37,99,235,.10),
-      transparent 30%
-    ),
-    linear-gradient(
-      180deg,
-      #f8fbff 0%,
-      #ffffff 100%
-    );
-
+    radial-gradient(circle at 85% 20%, rgba(37,99,235,.10), transparent 30%),
+    linear-gradient(180deg, #f8fbff 0%, #ffffff 100%);
   border-bottom: 1px solid var(--border);
 }
 
 .freelancer-hero .container {
   max-width: 900px;
-
   text-align: center;
 }
 
 .freelancer-hero h1 {
   margin: 12px 0 18px;
-
-  font-size: clamp(
-    2.4rem,
-    5vw,
-    4.2rem
-  );
-
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
   line-height: 1.05;
-
   letter-spacing: -2px;
+  color: var(--navy);
 }
 
 .freelancer-hero p {
   max-width: 650px;
-
   margin: 0 auto 34px;
-
   color: var(--text-soft);
-
   font-size: 1.08rem;
-
   line-height: 1.7;
 }
 
-
-/* =========================================================
-   BIG SEARCH
-========================================================= */
-
 .big-search {
   max-width: 760px;
-
-  height: 66px;
-
   margin: 0 auto;
-
+  height: 66px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
   display: flex;
   align-items: center;
-
   padding: 0 22px;
-
-  background: #fff;
-
-  border: 1px solid var(--border);
-
-  border-radius: 18px;
-
   box-shadow: 0 15px 45px rgba(15,23,42,.09);
 }
 
 .search-icon {
-  flex: 0 0 auto;
-
-  margin-right: 14px;
-
-  color: var(--text-soft);
-
   font-size: 28px;
+  color: var(--text-soft);
+  margin-right: 14px;
 }
 
 .big-search input {
   width: 100%;
-
   border: 0;
   outline: 0;
-
   background: transparent;
-
-  color: var(--text);
-
+  font-family: inherit;
   font-size: 1rem;
+  color: var(--text);
 }
 
 .big-search input::placeholder {
@@ -1576,46 +1526,30 @@ select:focus {
 }
 
 
-/* =========================================================
-   LISTING AREA
-========================================================= */
+/* LISTING */
 
 .freelancer-listing {
   padding: 55px 0 80px;
-
   background: #fff;
 }
 
 .freelancer-listing .listing-layout {
   display: grid;
-
-  grid-template-columns:
-    245px
-    1fr;
-
+  grid-template-columns: 245px 1fr;
   gap: 42px;
-
   align-items: start;
 }
 
 
-/* =========================================================
-   FILTERS
-========================================================= */
+/* FILTERI */
 
 .freelancer-listing .filters {
   position: sticky;
-
   top: 100px;
-
-  padding: 24px;
-
   background: #fff;
-
   border: 1px solid var(--border);
-
   border-radius: 18px;
-
+  padding: 24px;
   box-shadow: var(--shadow-sm);
 }
 
@@ -1623,45 +1557,35 @@ select:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   margin-bottom: 20px;
 }
 
 .filter-header h3 {
   margin: 0;
-
   font-size: 1.1rem;
+  color: var(--navy);
 }
 
 .filter-header span {
-  color: var(--text-soft);
-
   font-size: .75rem;
+  color: var(--text-soft);
 }
 
 .filter-option {
   display: flex;
   align-items: center;
-
   gap: 10px;
-
   padding: 11px 8px;
-
   border-radius: 10px;
-
   cursor: pointer;
-
   color: #475569;
-
   font-size: .92rem;
-
   transition: .2s ease;
 }
 
 .filter-option:hover {
-  color: var(--navy);
-
   background: #f1f5f9;
+  color: var(--navy);
 }
 
 .filter-option input {
@@ -1673,134 +1597,56 @@ select:focus {
 }
 
 
-/* =========================================================
-   RESULTS
-========================================================= */
+/* REZULTATI */
 
 .results-header {
   display: flex;
-
   align-items: center;
   justify-content: space-between;
-
   gap: 20px;
-
   margin-bottom: 24px;
 }
 
 .results-header h2 {
   margin: 0 0 5px;
-
   font-size: 1.5rem;
+  color: var(--navy);
 }
 
 .results-header p {
   margin: 0;
-
   color: var(--text-soft);
-
   font-size: .9rem;
 }
 
 .results-header select {
-  width: auto;
-
   min-width: 175px;
 }
 
 
-/* =========================================================
-   EMPTY STATE
-========================================================= */
-
-.empty-state {
-  display: none;
-
-  text-align: center;
-
-  padding: 70px 20px;
-
-  border: 1px dashed var(--border);
-
-  border-radius: 18px;
-
-  background: #f8fafc;
-}
-
-.empty-state.show {
-  display: block;
-}
-
-.empty-icon {
-  width: 55px;
-  height: 55px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  margin: 0 auto 15px;
-
-  border-radius: 50%;
-
-  background: #eaf1ff;
-
-  color: var(--primary);
-
-  font-size: 25px;
-}
-
-.empty-state h3 {
-  margin-bottom: 8px;
-}
-
-.empty-state p {
-  margin: 0;
-
-  color: var(--text-soft);
-}
-
-
-/* =========================================================
-   FREELANCER CTA
-========================================================= */
+/* CTA */
 
 .freelancer-cta {
   padding: 0 0 80px;
 }
 
 .cta-inner {
+  padding: 42px 48px;
+  border-radius: 24px;
+  background: var(--gradient);
+  color: #fff;
   display: flex;
-
   align-items: center;
   justify-content: space-between;
-
   gap: 30px;
-
-  padding: 42px 48px;
-
-  border-radius: 24px;
-
-  background: var(--gradient);
-
-  color: #fff;
-
   box-shadow: var(--shadow-lg);
 }
 
 .cta-inner h2 {
   max-width: 650px;
-
   margin: 8px 0 0;
-
   color: #fff;
-
-  font-size: clamp(
-    1.5rem,
-    3vw,
-    2.2rem
-  );
-
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
   line-height: 1.2;
 }
 
@@ -1809,316 +1655,50 @@ select:focus {
 }
 
 
-/* =========================================================
-   PROFILE PAGE
-========================================================= */
+/* PRAZAN REZULTAT */
 
-.profile-page {
-  padding: 65px 0 90px;
-
+.empty-state {
+  text-align: center;
+  padding: 70px 20px;
+  border: 1px dashed var(--border);
+  border-radius: 18px;
   background: #f8fafc;
 }
 
-.profile-layout {
-  display: grid;
-
-  grid-template-columns:
-    minmax(0, 1fr)
-    330px;
-
-  gap: 25px;
-
-  align-items: start;
-}
-
-.profile-card,
-.profile-side-card {
-  padding: 30px;
-
-  background: #fff;
-
-  border: 1px solid var(--border);
-
-  border-radius: 20px;
-
-  box-shadow: var(--shadow-sm);
-}
-
-.profile-header {
-  display: flex;
-
-  align-items: center;
-
-  gap: 20px;
-
-  margin-bottom: 25px;
-}
-
-.profile-avatar {
-  width: 100px;
-  height: 100px;
-
-  flex: 0 0 auto;
-
+.empty-icon {
+  width: 55px;
+  height: 55px;
+  margin: 0 auto 15px;
   border-radius: 50%;
-
-  object-fit: cover;
-
-  background: #e2e8f0;
+  background: #eaf1ff;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
 }
 
-.profile-header h1 {
-  margin-bottom: 5px;
-
-  font-size: 1.8rem;
+.empty-state h3 {
+  margin: 0 0 8px;
+  color: var(--navy);
 }
 
-.profile-role {
+.empty-state p {
+  margin: 0;
   color: var(--text-soft);
 }
 
-.profile-rating {
-  display: inline-flex;
 
-  margin-top: 10px;
-
-  padding: 5px 9px;
-
-  border-radius: 8px;
-
-  background: #fffbeb;
-
-  color: #b45309;
-
-  font-size: .8rem;
-
-  font-weight: 600;
-}
-
-.profile-description {
-  color: #475569;
-
-  line-height: 1.8;
-}
-
-.profile-skills {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 8px;
-
-  margin-top: 20px;
-}
-
-.profile-info {
-  display: grid;
-
-  gap: 15px;
-}
-
-.profile-info-row {
-  display: flex;
-
-  justify-content: space-between;
-
-  gap: 20px;
-
-  padding-bottom: 12px;
-
-  border-bottom: 1px solid var(--border);
-
-  font-size: .88rem;
-}
-
-.profile-info-row span:first-child {
-  color: var(--text-soft);
-}
-
-.profile-price {
-  color: var(--primary);
-
-  font-size: 1.2rem;
-
-  font-weight: 700;
-}
-
-
-/* =========================================================
-   PROJECT PAGE
-========================================================= */
-
-.project-page {
-  padding: 70px 0 90px;
-
-  background: #f8fafc;
-}
-
-.project-tabs {
-  display: flex;
-
-  gap: 8px;
-
-  margin-bottom: 25px;
-
-  padding: 5px;
-
-  width: fit-content;
-
-  border-radius: 12px;
-
-  background: #e2e8f0;
-}
-
-.project-tab {
-  padding: 10px 17px;
-
-  border: 0;
-
-  border-radius: 8px;
-
-  background: transparent;
-
-  color: #475569;
-
-  font-weight: 600;
-
-  cursor: pointer;
-}
-
-.project-tab.active {
-  background: #fff;
-
-  color: var(--primary);
-
-  box-shadow: var(--shadow-sm);
-}
-
-.project-form {
-  max-width: 800px;
-
-  margin: auto;
-
-  padding: 35px;
-
-  background: #fff;
-
-  border: 1px solid var(--border);
-
-  border-radius: 20px;
-
-  box-shadow: var(--shadow-md);
-}
-
-
-/* =========================================================
-   LISTING GRID FIX
-========================================================= */
-
-.listing-grid {
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
-}
-
-
-/* =========================================================
-   ANIMATIONS
-========================================================= */
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-
-    transform: translateY(15px);
-  }
-
-  to {
-    opacity: 1;
-
-    transform: translateY(0);
-  }
-}
-
-.hero-inner,
-.freelancer-hero .container {
-  animation: fadeUp .55s ease both;
-}
-
-
-/* =========================================================
-   RESPONSIVE — 1100px
-========================================================= */
-
-@media (max-width: 1100px) {
-
-  .nav-links {
-    gap: 17px;
-  }
-
-  .nav-links a {
-    font-size: .84rem;
-  }
-
-  .cat-grid {
-    grid-template-columns:
-      repeat(3, 1fr);
-  }
-
-  .steps {
-    grid-template-columns:
-      repeat(2, 1fr);
-  }
-
-  .freelancer-grid,
-  .listing-grid {
-    grid-template-columns:
-      repeat(2, 1fr);
-  }
-
-  .footer-grid {
-    grid-template-columns:
-      repeat(2, 1fr);
-  }
-
-}
-
-
-/* =========================================================
-   RESPONSIVE — 850px
-========================================================= */
+/* MOBILNI */
 
 @media (max-width: 850px) {
 
-  .nav-links,
-  .site-header .nav-actions {
-    display: none;
-  }
-
-  .hamburger {
-    display: block;
-  }
-
-  .hero {
-    padding: 75px 0 65px;
-  }
-
-  .section {
-    padding: 70px 0;
-  }
-
-  .split {
-    grid-template-columns: 1fr;
-
-    gap: 35px;
-  }
-
-  .testi-grid {
-    grid-template-columns: 1fr;
+  .freelancer-hero {
+    padding: 65px 0 50px;
   }
 
   .freelancer-listing .listing-layout {
     grid-template-columns: 1fr;
-
     gap: 25px;
   }
 
@@ -2132,122 +1712,31 @@ select:focus {
 
   .filters form {
     display: grid;
-
-    grid-template-columns:
-      repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .profile-layout {
-    grid-template-columns: 1fr;
+  .results-header {
+    align-items: flex-start;
   }
 
   .cta-inner {
     flex-direction: column;
-
     align-items: flex-start;
-
     padding: 32px;
   }
 
 }
 
 
-/* =========================================================
-   RESPONSIVE — 650px
-========================================================= */
-
-@media (max-width: 650px) {
-
-  .container {
-    width: min(
-      calc(100% - 28px),
-      var(--max-width)
-    );
-  }
-
-  .hero h1 {
-    font-size: 2.55rem;
-
-    letter-spacing: -1.8px;
-  }
-
-  .hero .lead {
-    font-size: 1rem;
-  }
-
-  .hero-ctas {
-    flex-direction: column;
-  }
-
-  .hero-ctas .btn {
-    width: 100%;
-  }
-
-  .search-box {
-    min-height: 58px;
-
-    padding-left: 15px;
-  }
-
-  .search-box .btn {
-    display: none;
-  }
-
-  .hero-stats {
-    gap: 25px;
-  }
-
-  .cat-grid,
-  .freelancer-grid,
-  .listing-grid,
-  .steps {
-    grid-template-columns: 1fr;
-  }
-
-  .footer-grid {
-    grid-template-columns: 1fr;
-
-    gap: 35px;
-  }
-
-  .footer-bottom {
-    flex-direction: column;
-
-    gap: 8px;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .form-card,
-  .auth-card,
-  .project-form {
-    padding: 25px;
-  }
-
-  .profile-header {
-    align-items: flex-start;
-  }
-
-  .profile-avatar {
-    width: 75px;
-    height: 75px;
-  }
-
-  .freelancer-hero {
-    padding: 65px 0 50px;
-  }
+@media (max-width: 560px) {
 
   .freelancer-hero h1 {
-    font-size: 2.35rem;
-
+    font-size: 2.25rem;
     letter-spacing: -1px;
   }
 
   .big-search {
     height: 58px;
-
     padding: 0 16px;
   }
 
@@ -2257,62 +1746,444 @@ select:focus {
 
   .results-header {
     flex-direction: column;
-
-    align-items: stretch;
   }
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   .results-header select {
     width: 100%;
   }
+<title>Pronađi freelancera | BalkanGig</title>
 
   .cta-inner {
     border-radius: 18px;
   }
 
-  .section-tight .cta-banner {
-    padding: 32px 25px;
-
-    flex-direction: column;
-
-    align-items: flex-start;
-  }
-
 }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container nav">
+
+    <a href="index.html" class="brand">BalkanGig</a>
+
+    <nav class="nav-links">
+      <a href="index.html">Početna</a>
+      <a href="pronadji-freelancera.html" class="active">Pronađi freelancera</a>
+      <a href="index.html#kategorije">Kategorije</a>
+      <a href="index.html#kako-funkcionise">Kako funkcioniše</a>
+    </nav>
+
+    <div class="nav-actions">
+      <a href="prijava.html" class="btn btn-outline btn-sm">Prijava</a>
+      <a href="registracija.html" class="btn btn-primary btn-sm">Registracija</a>
+    </div>
+
+    <button class="hamburger" id="hamburgerBtn" aria-label="Otvori meni">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+  </div>
+</header>
 
 
-/* =========================================================
-   RESPONSIVE — 450px
-========================================================= */
+<div class="mobile-nav" id="mobileNav">
 
-@media (max-width: 450px) {
+  <div class="mobile-nav-top">
+    <a href="index.html" class="brand">BalkanGig</a>
 
-  .brand {
-    font-size: 1.45rem;
-  }
+    <button class="mobile-nav-close" id="mobileNavClose">
+      &times;
+    </button>
+  </div>
 
-  .hero h1 {
-    font-size: 2.2rem;
-  }
+  <a href="index.html">Početna</a>
+  <a href="pronadji-freelancera.html">Pronađi freelancera</a>
+  <a href="index.html#kategorije">Kategorije</a>
+  <a href="index.html#kako-funkcionise">Kako funkcioniše</a>
 
-  .section-head h2 {
-    font-size: 1.9rem;
-  }
+  <div class="nav-actions">
+    <a href="prijava.html" class="btn btn-outline">Prijava</a>
+    <a href="registracija.html" class="btn btn-primary">Registracija</a>
+  </div>
 
-  .freelancer-card-top {
-    padding: 18px 18px 12px;
-  }
+</div>
 
-  .freelancer-card-body {
-    padding: 0 18px 18px;
-  }
 
-  .profile-card,
-  .profile-side-card {
-    padding: 22px;
-  }
+<!-- HERO -->
 
-  .profile-header {
-    flex-direction: column;
-  }
+<section class="freelancer-hero">
 
-}
+  <div class="container">
+
+    <span class="kicker">BalkanGig freelanceri</span>
+
+    <h1>
+      Pronađi osobu za svoj projekat.
+    </h1>
+
+    <p>
+      Pretraži profile freelancera po veštinama, kategoriji
+      ili imenu i pronađi ono što ti je potrebno.
+    </p>
+
+
+    <div class="big-search">
+
+      <span class="search-icon">⌕</span>
+
+      <input
+        type="text"
+        id="listingSearch"
+        placeholder="Npr. web developer, logo dizajner, video editor..."
+      >
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- LISTING -->
+
+<section class="freelancer-listing">
+
+  <div class="container">
+
+    <div class="listing-layout">
+
+
+      <!-- FILTERI -->
+
+      <aside class="filters">
+
+        <div class="filter-header">
+
+          <h3>Kategorije</h3>
+
+          <span>Filteri</span>
+
+        </div>
+
+
+        <form id="filtersForm">
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="graficki-dizajn"
+            >
+            <span>🎨</span>
+            Grafički dizajn
+          </label>
+
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="web-development"
+            >
+            <span>💻</span>
+            Web development
+          </label>
+
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="video-editing"
+            >
+            <span>🎬</span>
+            Video editing
+          </label>
+
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="social-media"
+            >
+            <span>📱</span>
+            Social media
+          </label>
+
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="pisanje-prevodjenje"
+            >
+            <span>✍️</span>
+            Pisanje i prevođenje
+          </label>
+
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="digitalni-marketing"
+            >
+            <span>📢</span>
+            Digitalni marketing
+          </label>
+
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="audio-voiceover"
+            >
+            <span>🎧</span>
+            Audio i voice-over
+          </label>
+
+
+          <label class="filter-option">
+            <input
+              type="checkbox"
+              name="kategorija"
+              value="fotografija"
+            >
+            <span>📷</span>
+            Fotografija
+          </label>
+
+        </form>
+
+      </aside>
+
+
+      <!-- REZULTATI -->
+
+      <main class="freelancer-results">
+
+        <div class="results-header">
+
+          <div>
+
+            <h2>Freelanceri</h2>
+
+            <p>
+              <strong id="resultCount">0</strong>
+              profila
+            </p>
+
+          </div>
+
+
+          <select id="sortSelect">
+
+            <option value="preporuceno">
+              Preporučeno
+            </option>
+
+            <option value="ocena">
+              Najviša ocena
+            </option>
+
+            <option value="projekti">
+              Najviše projekata
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div
+          class="freelancer-grid listing-grid"
+          id="listingGrid"
+        ></div>
+
+
+        <div
+          class="empty-state"
+          id="emptyState"
+        >
+
+          <div class="empty-icon">⌕</div>
+
+          <h3>Nema pronađenih freelancera</h3>
+
+          <p>
+            Probaj drugi pojam za pretragu ili ukloni neki filter.
+          </p>
+
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- CTA -->
+
+<section class="freelancer-cta">
+
+  <div class="container">
+
+    <div class="cta-inner">
+
+      <div>
+
+        <span class="kicker">Ne nalaziš ono što tražiš?</span>
+
+        <h2>Objavi projekat i dozvoli freelancerima da ti se jave.</h2>
+
+      </div>
+
+      <a
+        href="objavi-projekat.html"
+        class="btn btn-light"
+      >
+        Objavi projekat
+      </a>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<footer class="site-footer">
+
+  <div class="container">
+
+    <div class="footer-grid">
+
+      <div class="footer-brand">
+
+        <a href="index.html" class="brand">
+          BalkanGig
+        </a>
+
+        <p>
+          Platforma za povezivanje klijenata i freelancera
+          sa Balkana.
+        </p>
+
+      </div>
+
+
+      <div class="footer-col">
+
+        <h4>Platforma</h4>
+
+        <ul>
+
+          <li>
+            <a href="pronadji-freelancera.html">
+              Pronađi freelancera
+            </a>
+          </li>
+
+          <li>
+            <a href="objavi-projekat.html">
+              Objavi projekat
+            </a>
+          </li>
+
+          <li>
+            <a href="index.html#kategorije">
+              Kategorije
+            </a>
+          </li>
+
+        </ul>
+
+      </div>
+
+
+      <div class="footer-col">
+
+        <h4>Nalog</h4>
+
+        <ul>
+
+          <li>
+            <a href="prijava.html">
+              Prijava
+            </a>
+          </li>
+
+          <li>
+            <a href="registracija.html">
+              Registracija
+            </a>
+          </li>
+
+        </ul>
+
+      </div>
+
+
+      <div class="footer-col">
+
+        <h4>Kontakt</h4>
+
+        <ul>
+
+          <li>
+            <a href="mailto:kontakt@balkangig.com">
+              kontakt@balkangig.com
+            </a>
+          </li>
+
+          <li>
+            <a href="tel:+38160123456">
+              +381 60 123 456
+            </a>
+          </li>
+
+        </ul>
+
+      </div>
+
+    </div>
+
+
+    <div class="footer-bottom">
+
+      <span>
+        © 2026 BalkanGig
+      </span>
+
+      <span>
+        Platforma za freelancere i klijente sa Balkana.
+      </span>
+
+    </div>
+
+  </div>
+
+</footer>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
