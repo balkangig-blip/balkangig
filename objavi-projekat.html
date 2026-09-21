@@ -45,7 +45,7 @@
   </div>
 </div>
 
-<section class="section">
+<section class="section project-section">
   <div class="container">
     <div class="forms-page-head">
       <span class="kicker">Za klijente</span>
@@ -54,14 +54,18 @@
     </div>
 
     <div class="forms-tabs">
-      <button class="active" data-target="panelBrza">Brza ponuda</button>
-      <button data-target="panelDetaljno">Detaljan zahtev</button>
+      <button class="active" data-target="panelBrza">⚡ Brza ponuda</button>
+      <button data-target="panelDetaljno">📋 Detaljan zahtev</button>
+    </div>
+    <div class="forms-tabs-note">
+      <button type="button" id="reopenChoiceBtn">Nisi siguran/na šta ti treba? Pomozi mi da izaberem</button>
     </div>
 
     <!-- BRZA PONUDA -->
     <div class="form-panel active" id="panelBrza">
       <div class="form-card">
         <div class="form-success">✅ Hvala! Tvoj upit je poslat — freelanceri će ti se javiti uskoro.</div>
+        <div class="form-icon-badge">⚡</div>
         <h3 style="margin-bottom:6px;">Brza ponuda</h3>
         <p style="margin-bottom:24px;">Za jednostavne projekte kojima je potreban brz odgovor.</p>
         <form data-validate>
@@ -101,6 +105,7 @@
     <div class="form-panel" id="panelDetaljno">
       <div class="form-card">
         <div class="form-success">✅ Hvala! Detaljan zahtev je poslat freelancerima u odabranoj kategoriji.</div>
+        <div class="form-icon-badge">📋</div>
         <h3 style="margin-bottom:6px;">Detaljan zahtev</h3>
         <p style="margin-bottom:24px;">Za veće ili složenije projekte kojima je potreban precizan opis.</p>
         <form data-validate>
@@ -165,6 +170,42 @@
     </div>
   </div>
 </section>
+
+<!-- POP-UP: izbor tipa objave -->
+<div class="choice-modal-backdrop" id="choiceModalBackdrop">
+  <div class="choice-modal" role="dialog" aria-modal="true" aria-labelledby="choiceModalTitle">
+    <button class="choice-modal-close" id="choiceModalClose" aria-label="Zatvori">&times;</button>
+    <div class="choice-modal-head">
+      <span class="kicker">Objavi projekat</span>
+      <h2 id="choiceModalTitle">Kako želiš da opišeš svoj projekat?</h2>
+      <p>Izaberi opciju koja ti najviše odgovara — u svakom trenutku možeš promeniti izbor.</p>
+    </div>
+    <div class="choice-grid">
+      <button type="button" class="choice-card" data-choice="panelBrza">
+        <span class="choice-card-icon">⚡</span>
+        <h3>Brza ponuda</h3>
+        <p>Za male, jasno definisane poslove kojima treba brz odgovor.</p>
+        <ul>
+          <li>Traje manje od minut</li>
+          <li>Samo osnovne informacije</li>
+          <li>Odgovor za par sati</li>
+        </ul>
+        <span class="choice-card-btn">Izaberi brzu ponudu</span>
+      </button>
+      <button type="button" class="choice-card" data-choice="panelDetaljno">
+        <span class="choice-card-icon">📋</span>
+        <h3>Detaljan zahtev</h3>
+        <p>Za veće ili složenije projekte kojima treba precizan opis.</p>
+        <ul>
+          <li>Kategorija i budžet posebno</li>
+          <li>Prostor za detaljan opis</li>
+          <li>Preciznije i tačnije ponude</li>
+        </ul>
+        <span class="choice-card-btn">Izaberi detaljan zahtev</span>
+      </button>
+    </div>
+  </div>
+</div>
 
 <footer class="site-footer">
   <div class="container">

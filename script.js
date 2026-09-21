@@ -324,6 +324,18 @@ function initProfilePage() {
   document.getElementById("pInfoLocation").textContent = f.location;
   document.getElementById("pInfoDone").textContent = f.done;
   document.getElementById("pInfoReviews").textContent = f.reviews;
+
+  const cat = CATEGORIES.find(c => c.id === f.category);
+  const icon = cat ? cat.icon : "🖼️";
+  const portfolioWrap = document.getElementById("pPortfolio");
+  if (portfolioWrap) {
+    portfolioWrap.innerHTML = Array.from({ length: 6 }).map((_, i) => `
+      <div class="portfolio-item">
+        <span class="portfolio-icon">${icon}</span>
+        <span>Rad ${String(i + 1).padStart(2, "0")}</span>
+      </div>
+    `).join("");
+  }
 }
 
 /* ---------- Forme: Brza ponuda / Detaljan zahtev ---------- */
@@ -352,6 +364,54 @@ function initForms() {
   });
 }
 
+/* ---------- Objavi projekat: pop-up izbor tipa objave ---------- */
+function initProjectChoice() {
+  const backdrop = document.getElementById("choiceModalBackdrop");
+  if (!backdrop) return;
+
+  const closeBtn = document.getElementById("choiceModalClose");
+  const reopenBtn = document.getElementById("reopenChoiceBtn");
+  const choiceCards = backdrop.querySelectorAll(".choice-card");
+  const tabs = document.querySelectorAll(".forms-tabs button");
+  const panels = document.querySelectorAll(".form-panel");
+
+  function openModal() {
+    backdrop.classList.add("open");
+  }
+
+  function closeModal() {
+    backdrop.classList.remove("open");
+  }
+
+  function selectPanel(targetId) {
+    tabs.forEach(t => t.classList.toggle("active", t.dataset.target === targetId));
+    panels.forEach(p => p.classList.toggle("active", p.id === targetId));
+  }
+
+  choiceCards.forEach(card => {
+    card.addEventListener("click", () => {
+      selectPanel(card.dataset.choice);
+      closeModal();
+      const panel = document.getElementById(card.dataset.choice);
+      if (panel) panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  });
+
+  if (closeBtn) closeBtn.addEventListener("click", closeModal);
+  if (reopenBtn) reopenBtn.addEventListener("click", openModal);
+
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) closeModal();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
+
+  // Pop-up se lepo pojavi kratko nakon učitavanja stranice
+  setTimeout(openModal, 350);
+}
+
 /* ---------- Prijava / Registracija: role toggle ---------- */
 function initAuthToggle() {
   const toggle = document.querySelector(".role-toggle");
@@ -373,6 +433,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initListingPage();
   initProfilePage();
   initForms();
+  initProjectChoice();
   initAuthToggle();
   initScrollReveal();
 });
