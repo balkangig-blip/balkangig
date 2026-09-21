@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registracija | BalkanGig</title>
+<link rel="icon" href="assets/logo.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container nav">
+    <a href="index.html" class="brand"><img src="assets/logo.jpg" alt="BalkanGig logo">Balkan<span>Gig</span></a>
+    <nav class="nav-links">
+      <a href="index.html">Početna</a>
+      <a href="pronadji-freelancera.html">Pronađi freelancera</a>
+      <a href="index.html#kategorije">Kategorije</a>
+      <a href="index.html#kako-funkcionise">Kako funkcioniše</a>
+      <a href="index.html#za-freelancere">Za freelancere</a>
+    </nav>
+    <div class="nav-actions">
+      <a href="prijava.html" class="btn btn-outline btn-sm">Prijava</a>
+      <a href="registracija.html" class="btn btn-primary btn-sm">Registracija</a>
+    </div>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Otvori meni">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav-top">
+    <a href="index.html" class="brand"><img src="assets/logo.jpg" alt="BalkanGig logo">Balkan<span>Gig</span></a>
+    <button class="mobile-nav-close" id="mobileNavClose" aria-label="Zatvori meni">&times;</button>
+  </div>
+  <a href="index.html">Početna</a>
+  <a href="pronadji-freelancera.html">Pronađi freelancera</a>
+  <a href="index.html#kategorije">Kategorije</a>
+  <a href="index.html#kako-funkcionise">Kako funkcioniše</a>
+  <a href="index.html#za-freelancere">Za freelancere</a>
+</div>
+
+<div class="auth-wrap">
+  <div class="auth-card">
+    <h1>Napravi nalog</h1>
+    <p class="auth-sub">Pridruži se BalkanGig zajednici</p>
+
+    <div class="role-toggle">
+      <button type="button" class="active" data-role="klijent">Tražim freelancera</button>
+      <button type="button" data-role="freelancer">Ja sam freelancer</button>
+    </div>
+
+    <div class="form-success" id="regSuccess">✅ Nalog je uspešno napravljen! (demo — bez backend-a)</div>
+    <form data-validate id="regForm">
+      <div class="field">
+        <label for="re-ime">Ime i prezime</label>
+        <input type="text" id="re-ime" placeholder="npr. Marko Marković" required>
+      </div>
+      <div class="field">
+        <label for="re-email">Email</label>
+        <input type="email" id="re-email" placeholder="ime@primer.com" required>
+      </div>
+      <div class="field">
+        <label for="re-lozinka">Lozinka</label>
+        <input type="password" id="re-lozinka" placeholder="Najmanje 8 karaktera" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Registruj se</button>
+    </form>
+    <div class="auth-divider">ili</div>
+    <a href="#" class="btn btn-outline btn-block">Registruj se preko Google naloga</a>
+    <p class="auth-switch">Već imaš nalog? <a href="prijava.html">Prijavi se</a></p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-bottom" style="border:none; padding-top:0;">
+      <span>© 2026 BalkanGig. Sva prava zadržana.</span>
+      <span><a href="#" style="color:inherit;">Uslovi korišćenja</a> · <a href="#" style="color:inherit;">Politika privatnosti</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
