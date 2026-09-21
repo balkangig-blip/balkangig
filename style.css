@@ -108,12 +108,26 @@ button {
 /* TEKSTUALNI LOGO */
 
 .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-family: Poppins, Inter, Arial, sans-serif;
   font-size: 1.55rem;
   font-weight: 800;
   color: var(--primary);
   letter-spacing: -0.8px;
   white-space: nowrap;
+}
+
+.brand img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  border-radius: var(--radius-xs);
+}
+
+.brand span {
+  color: var(--accent);
 }
 
 .nav-links {
@@ -812,26 +826,121 @@ button {
    PRIJAVA / REGISTRACIJA
 ========================================= */
 
-.auth-container {
-  max-width: 500px;
-  margin: 0 auto;
+.auth-wrap {
+  min-height: calc(100vh - 75px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background: var(--bg);
 }
 
 .auth-card {
+  width: 100%;
+  max-width: 440px;
   background: white;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 35px;
+  padding: 38px;
   box-shadow: var(--shadow-sm);
 }
 
 .auth-card h1 {
   color: var(--navy);
-  margin-bottom: 10px;
+  margin-bottom: 6px;
+  font-family: Poppins, Inter, Arial, sans-serif;
+  font-size: 1.6rem;
 }
 
 .auth-card p {
   color: var(--text-soft);
+}
+
+.auth-sub {
+  margin-bottom: 26px;
+}
+
+.form-success {
+  display: none;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: #dcfce7;
+  color: #166534;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.form-success.show {
+  display: block;
+}
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--navy);
+}
+
+.field input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  outline: 0;
+  background: white;
+  color: var(--text);
+}
+
+.field input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.btn-block {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-switch {
+  margin-top: 24px;
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 0.9rem;
+}
+
+.auth-switch a {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
 }
 
 .role-toggle {
@@ -841,7 +950,7 @@ button {
   background: var(--bg);
   padding: 5px;
   border-radius: var(--radius-sm);
-  margin: 25px 0;
+  margin-bottom: 22px;
 }
 
 .role-toggle button {
