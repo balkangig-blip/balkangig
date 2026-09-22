@@ -688,6 +688,7 @@ html[data-theme="light"] .theme-toggle .icon-moon {
 .hero {
   padding: 90px 0 100px;
   background:
+    linear-gradient(180deg, transparent 80%, var(--white) 100%),
     radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.08), transparent 30%),
     radial-gradient(circle at 90% 10%, rgba(20, 184, 166, 0.08), transparent 30%),
     linear-gradient(180deg, var(--hero-grad-1), var(--hero-grad-2));
@@ -780,7 +781,13 @@ html[data-theme="light"] .theme-toggle .icon-moon {
 }
 
 .section-alt {
-  background: var(--bg);
+  background: linear-gradient(
+    180deg,
+    var(--white) 0%,
+    var(--bg) 14%,
+    var(--bg) 86%,
+    var(--white) 100%
+  );
 }
 
 .section-header {
@@ -1177,7 +1184,7 @@ html[data-theme="light"] .theme-toggle .icon-moon {
 ========================================= */
 
 .site-footer {
-  background: var(--navy);
+  background: linear-gradient(180deg, var(--white) 0%, var(--navy) 110px);
   color: white;
   padding: 65px 0 25px;
 }
@@ -1294,7 +1301,13 @@ html[data-theme="light"] .theme-toggle .icon-moon {
   background:
     radial-gradient(circle at 8% 10%, rgba(37, 99, 235, 0.07), transparent 35%),
     radial-gradient(circle at 92% 25%, rgba(20, 184, 166, 0.08), transparent 35%),
-    var(--bg);
+    linear-gradient(
+      180deg,
+      var(--white) 0%,
+      var(--bg) 90px,
+      var(--bg) calc(100% - 90px),
+      var(--white) 100%
+    );
 }
 
 .forms-page-head {
@@ -1624,7 +1637,13 @@ html[data-theme="light"] .theme-toggle .icon-moon {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  background: var(--bg);
+  background: linear-gradient(
+    180deg,
+    var(--white) 0%,
+    var(--bg) 90px,
+    var(--bg) calc(100% - 90px),
+    var(--white) 100%
+  );
 }
 
 .auth-card {
@@ -1775,6 +1794,15 @@ html[data-theme="light"] .theme-toggle .icon-moon {
   overflow: hidden;
 }
 
+.profile-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(180deg, transparent 80%, var(--white) 100%);
+  pointer-events: none;
+}
+
 .profile-hero::before {
   content: "";
   position: absolute;
@@ -1787,6 +1815,7 @@ html[data-theme="light"] .theme-toggle .icon-moon {
 
 .profile-hero .container {
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 28px;
@@ -2061,9 +2090,9 @@ html[data-theme="light"] .theme-toggle .icon-moon {
 .freelancer-hero {
   padding: 75px 0 65px;
   background:
+    linear-gradient(180deg, transparent 75%, var(--white) 100%),
     radial-gradient(circle at 85% 20%, rgba(37,99,235,0.08), transparent 30%),
     linear-gradient(180deg, var(--hero-grad-1), var(--hero-grad-2));
-  border-bottom: 1px solid var(--border);
 }
 
 .freelancer-hero .container {
