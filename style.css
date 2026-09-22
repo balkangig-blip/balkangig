@@ -2880,7 +2880,7 @@ html[data-theme="light"] .theme-toggle .icon-moon {
   flex-shrink: 0;
 }
 
-.chat-report-btn {
+.chat-icon-btn {
   border: 1px solid var(--border);
   background: var(--bg-alt);
   color: var(--text-soft);
@@ -2895,10 +2895,15 @@ html[data-theme="light"] .theme-toggle .icon-moon {
   transition: transform var(--t-fast) var(--ease-smooth), background var(--t-fast) ease, color var(--t-fast) ease;
 }
 
+.chat-icon-btn:hover {
+  background: rgba(59, 130, 246, 0.14);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
 .chat-report-btn:hover {
   background: rgba(245, 158, 11, 0.14);
   color: #f59e0b;
-  transform: translateY(-1px);
 }
 
 /* Razlozi prijave u modalu za moderaciju */
@@ -2938,6 +2943,88 @@ html[data-theme="light"] .theme-toggle .icon-moon {
   gap: 10px;
   padding: 16px 22px;
   border-top: 1px solid var(--border);
+}
+
+.chat-attach-btn {
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--text-soft);
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+  transition: transform var(--t-fast) var(--ease-smooth), background var(--t-fast) ease, color var(--t-fast) ease;
+}
+
+.chat-attach-btn:hover {
+  background: rgba(59, 130, 246, 0.14);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+/* Poruke sa poslatim fajlom */
+.msg-file {
+  padding: 8px;
+}
+
+.msg-file-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: inherit;
+  transition: background var(--t-fast) ease;
+}
+
+.msg-own .msg-file-card:hover,
+.msg-theirs .msg-file-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.msg-file-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-xs);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.msg-file-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-xs);
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.msg-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.msg-file-info strong {
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 190px;
+}
+
+.msg-file-info span {
+  font-size: 0.76rem;
+  opacity: 0.85;
 }
 
 .chat-input-row textarea {
@@ -3108,6 +3195,26 @@ html[data-theme="light"] .theme-toggle .icon-moon {
 
   .chat-back-btn {
     display: inline-flex !important;
+  }
+
+  .chat-window-head {
+    padding: 14px 16px;
+    gap: 8px;
+  }
+
+  .chat-window-head-actions {
+    gap: 6px;
+  }
+
+  .chat-icon-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.85rem;
+  }
+
+  .job-status-badge {
+    padding: 5px 10px;
+    font-size: 0.7rem;
   }
 }
 

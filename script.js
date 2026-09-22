@@ -779,6 +779,10 @@ function initChatPage() {
   const sendBtn = document.getElementById("chatSendBtn");
   const backBtn = document.getElementById("chatBackBtn");
   const contactWarning = document.getElementById("contactWarning");
+  const attachBtn = document.getElementById("chatAttachBtn");
+  const fileInput = document.getElementById("chatFileInput");
+
+  const MAX_FILE_SIZE_FOR_PREVIEW = 4 * 1024 * 1024; // 4MB — granica za čuvanje sadržaja fajla u demo (localStorage)
 
   let currentId = null;
   let contactWarningTimer = null;
@@ -806,7 +810,9 @@ function initChatPage() {
     const msgs = getChatMessages(id);
     const last = msgs[msgs.length - 1];
     if (!last) return "";
-    return (last.from === "me" ? "Ti: " : "") + last.text;
+    const prefix = last.from === "me" ? "Ti: " : "";
+    if (last.type === "file") return prefix + "📎 " + last.fileName;
+    return prefix + last.text;
   }
 
   function renderList(filter) {
@@ -869,10 +875,45 @@ function initChatPage() {
     if (payBtn) payBtn.addEventListener("click", () => openPaymentModal(f));
   }
 
+  function fileTypeIcon(name) {
+    const ext = (name.split(".").pop() || "").toLowerCase();
+    if (["jpg", "jpeg", "png", "gif", "webp", "svg"].includes(ext)) return "🖼️";
+    if (["pdf"].includes(ext)) return "📕";
+    if (["doc", "docx"].includes(ext)) return "📄";
+    if (["xls", "xlsx", "csv"].includes(ext)) return "📊";
+    if (["zip", "rar", "7z"].includes(ext)) return "🗜️";
+    if (["psd", "ai", "fig", "sketch"].includes(ext)) return "🎨";
+    return "📎";
+  }
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
   function renderMessages(id) {
     const msgs = getChatMessages(id);
     messagesEl.innerHTML = msgs.map(m => {
       const cls = m.from === "me" ? "msg-own" : m.from === "system" ? "msg-system" : "msg-theirs";
+      if (m.type === "file") {
+        const isImage = m.fileData && m.fileData.startsWith("data:image");
+        const thumb = isImage
+          ? `<img class="msg-file-thumb" src="${m.fileData}" alt="${m.fileName}">`
+          : `<span class="msg-file-icon">${fileTypeIcon(m.fileName)}</span>`;
+        const downloadAttr = m.fileData ? `href="${m.fileData}" download="${m.fileName}"` : `href="javascript:void(0)" onclick="return false;"`;
+        return `
+          <div class="msg ${cls} msg-file">
+            <a class="msg-file-card" ${downloadAttr} title="${m.fileData ? "Preuzmi fajl" : "Fajl nije dostupan za preuzimanje u demo verziji"}">
+              ${thumb}
+              <span class="msg-file-info">
+                <strong>${m.fileName}</strong>
+                <span>${formatFileSize(m.fileSize)}${m.fileData ? " · preuzmi" : " · demo (bez sadržaja)"}</span>
+              </span>
+            </a>
+          </div>
+        `;
+      }
       return `<div class="msg ${cls}">${m.text}</div>`;
     }).join("");
     messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -898,7 +939,9 @@ function initChatPage() {
       </div>
       <div class="chat-window-head-actions">
         <span class="job-status-badge" id="chatJobBadge"></span>
-        <button type="button" class="chat-report-btn" id="chatReportBtn" title="Prijavi razgovor" aria-label="Prijavi razgovor">🚩</button>
+        <button type="button" class="chat-icon-btn" id="chatCallBtn" title="Audio poziv" aria-label="Audio poziv">📞</button>
+        <button type="button" class="chat-icon-btn" id="chatVideoBtn" title="Video poziv" aria-label="Video poziv">🎥</button>
+        <button type="button" class="chat-icon-btn chat-report-btn" id="chatReportBtn" title="Prijavi razgovor" aria-label="Prijavi razgovor">🚩</button>
       </div>
     `;
     document.getElementById("chatBackBtnInner").addEventListener("click", () => {
@@ -909,6 +952,20 @@ function initChatPage() {
     if (reportBtnInner) {
       reportBtnInner.addEventListener("click", () => {
         if (window.__balkanGigOpenReportModal) window.__balkanGigOpenReportModal(f);
+      });
+    }
+
+    const callBtnInner = document.getElementById("chatCallBtn");
+    if (callBtnInner) {
+      callBtnInner.addEventListener("click", () => {
+        if (window.__balkanGigOpenCallModal) window.__balkanGigOpenCallModal(f, "audio");
+      });
+    }
+
+    const videoBtnInner = document.getElementById("chatVideoBtn");
+    if (videoBtnInner) {
+      videoBtnInner.addEventListener("click", () => {
+        if (window.__balkanGigOpenCallModal) window.__balkanGigOpenCallModal(f, "video");
       });
     }
 
@@ -956,6 +1013,59 @@ function initChatPage() {
     renderJobPanel(f);
     renderMessages(id);
     renderList(searchEl ? searchEl.value : "");
+  }
+
+  function sendFileMessage(file) {
+    if (currentId === null) return;
+
+    function pushFileMsg(fileData) {
+      const msgs = getChatMessages(currentId);
+      msgs.push({
+        from: "me",
+        type: "file",
+        fileName: file.name,
+        fileSize: file.size,
+        fileData: fileData || null,
+        time: Date.now()
+      });
+      saveChatMessages(currentId, msgs);
+      renderMessages(currentId);
+      renderList(searchEl ? searchEl.value : "");
+
+      setTimeout(() => {
+        const updated = getChatMessages(currentId);
+        updated.push({ from: "them", text: "Primio/la sam fajl, hvala! Pogledaću i javiti ti se.", time: Date.now() });
+        saveChatMessages(currentId, updated);
+        if (currentId !== null) {
+          renderMessages(currentId);
+          renderList(searchEl ? searchEl.value : "");
+        }
+      }, 900);
+    }
+
+    // Slike do 4MB čuvamo kao data URL (prikaz + preuzimanje). Veći ili
+    // ne-slikovni fajlovi u ovoj demo verziji (bez pravog servera/storage-a)
+    // se prikazuju kao poslati, ali bez pravog sadržaja za preuzimanje.
+    if (file.size <= MAX_FILE_SIZE_FOR_PREVIEW && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = () => pushFileMsg(reader.result);
+      reader.onerror = () => pushFileMsg(null);
+      reader.readAsDataURL(file);
+    } else {
+      pushFileMsg(null);
+    }
+  }
+
+  if (attachBtn && fileInput) {
+    attachBtn.addEventListener("click", () => {
+      if (currentId === null) return;
+      fileInput.click();
+    });
+    fileInput.addEventListener("change", () => {
+      const files = Array.from(fileInput.files || []);
+      files.forEach(sendFileMessage);
+      fileInput.value = "";
+    });
   }
 
   sendBtn.addEventListener("click", sendMessage);
@@ -1179,7 +1289,51 @@ function initReportModal() {
   };
 }
 
-/* ---------- Objavi projekat: suptilan savet ako opis sadrži kontakt ---------- */
+/* =========================================================
+   AUDIO/VIDEO POZIVI (UI priprema)
+   Pravi poziv zahteva real-time infrastrukturu (WebRTC server,
+   signalizaciju, npr. Twilio/Daily.co) koju frontend-only sajt
+   nema. Ovde je samo iskren UI koji najavljuje funkciju i
+   pokazuje gde će se kasnije povezati.
+   ========================================================= */
+
+function initCallModal() {
+  const backdrop = document.getElementById("callModalBackdrop");
+  if (!backdrop) return;
+
+  const closeBtn = document.getElementById("callModalClose");
+  const body = document.getElementById("callModalBody");
+  const title = document.getElementById("callModalTitle");
+
+  function close() {
+    backdrop.classList.remove("open");
+  }
+
+  closeBtn.addEventListener("click", close);
+  backdrop.addEventListener("click", (e) => { if (e.target === backdrop) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+  window.__balkanGigOpenCallModal = function (f, kind) {
+    if (!f) return;
+    const label = kind === "video" ? "Video poziv" : "Audio poziv";
+    const icon = kind === "video" ? "🎥" : "📞";
+    title.textContent = "Uskoro dostupno";
+    body.innerHTML = `
+      <div style="text-align:center; padding:6px 0 4px;">
+        <div class="pay-success-icon" style="background:rgba(59,130,246,0.14); color:var(--primary);">${icon}</div>
+        <h3 style="color:var(--heading); margin-bottom:8px;">${label} sa "${f.name}"</h3>
+        <p style="color:var(--text-soft); font-size:0.92rem; line-height:1.6;">
+          Pozivi unutar BalkanGig chata su u pripremi — cilj je da i razgovor uživo ostane
+          zaštićen na platformi, bez potrebe da razmenjujete brojeve telefona ili nalog na
+          drugim aplikacijama. Za sada nastavi dogovor kroz poruke.
+        </p>
+        <button type="button" class="btn btn-primary btn-block" id="callModalOkBtn" style="margin-top:18px;">Razumem</button>
+      </div>
+    `;
+    backdrop.classList.add("open");
+    document.getElementById("callModalOkBtn").addEventListener("click", close);
+  };
+}
 function initContactFieldHints() {
   const ids = ["bp-potreba", "dz-opis"];
   ids.forEach(id => {
@@ -1226,6 +1380,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initChatPage();
   initPaymentModal();
   initReportModal();
+  initCallModal();
   initContactFieldHints();
   initScrollReveal();
 });
