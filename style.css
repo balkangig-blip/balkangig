@@ -1184,7 +1184,7 @@ html[data-theme="light"] .theme-toggle .icon-moon {
 ========================================= */
 
 .site-footer {
-  background: linear-gradient(180deg, var(--white) 0%, var(--navy) 110px);
+  background: var(--navy);
   color: white;
   padding: 65px 0 25px;
 }
