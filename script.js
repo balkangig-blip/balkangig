@@ -131,7 +131,7 @@ function freelancerCardHTML(f) {
   return `
     <div class="freelancer-card reveal">
       <div class="freelancer-card-header">
-        <img class="freelancer-avatar" src="${f.img}" alt="${f.name}">
+        <img class="freelancer-avatar" src="${f.img}" alt="${f.name}" loading="lazy" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(f.name)}&backgroundType=gradientLinear';">
         <div>
           <h3>${f.name}</h3>
           <div class="freelancer-role">${f.role}</div>
@@ -330,6 +330,7 @@ function initListingPage() {
   const params = new URLSearchParams(window.location.search);
   const filtersForm = document.getElementById("filtersForm");
   const clearBtn = document.getElementById("clearFiltersBtn");
+  const emptyStateResetBtn = document.getElementById("emptyStateResetBtn");
   const sortSelect = document.getElementById("sortSelect");
   const resultCount = document.getElementById("resultCount");
   const emptyState = document.getElementById("emptyState");
@@ -505,16 +506,16 @@ function initListingPage() {
   });
   if (sortSelect) sortSelect.addEventListener("change", render);
   if (searchInput) searchInput.addEventListener("input", render);
-  if (clearBtn) {
-    clearBtn.addEventListener("click", () => {
-      filtersForm.querySelectorAll('input[name="kategorija"]:checked').forEach(i => i.checked = false);
-      setActivePill("ocena", "0");
-      setActivePill("budzet", "all");
-      if (searchInput) searchInput.value = "";
-      if (sortSelect) sortSelect.value = "preporuceno";
-      render();
-    });
+  function resetFilters() {
+    filtersForm.querySelectorAll('input[name="kategorija"]:checked').forEach(i => i.checked = false);
+    setActivePill("ocena", "0");
+    setActivePill("budzet", "all");
+    if (searchInput) searchInput.value = "";
+    if (sortSelect) sortSelect.value = "preporuceno";
+    render();
   }
+  if (clearBtn) clearBtn.addEventListener("click", resetFilters);
+  if (emptyStateResetBtn) emptyStateResetBtn.addEventListener("click", resetFilters);
 
   render();
 }
@@ -529,6 +530,10 @@ function initProfilePage() {
 
   document.title = `${f.name} — ${f.role} | BalkanGig`;
   document.getElementById("pAvatar").src = f.img;
+  document.getElementById("pAvatar").onerror = function () {
+    this.onerror = null;
+    this.src = `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(f.name)}&backgroundType=gradientLinear`;
+  };
   document.getElementById("pName").textContent = f.name;
   document.getElementById("pRole").textContent = f.role;
   document.getElementById("pLocation").textContent = "📍 " + f.location;
@@ -814,7 +819,7 @@ function initChatPage() {
       const dotClass = status === "placeno" ? "paid" : status === "zavrseno" ? "done" : "";
       return `
         <button type="button" class="chat-list-item${f.id === currentId ? " active" : ""}" data-id="${f.id}">
-          <img class="chat-list-avatar" src="${f.img}" alt="${f.name}">
+          <img class="chat-list-avatar" src="${f.img}" alt="${f.name}" loading="lazy" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(f.name)}&backgroundType=gradientLinear';">
           <div class="chat-list-item-body">
             <div class="chat-list-item-top">
               <strong>${f.name}</strong>
@@ -885,7 +890,7 @@ function initChatPage() {
     windowHead.innerHTML = `
       <div class="chat-window-head-info">
         <button type="button" class="chat-back-btn" id="chatBackBtnInner" aria-label="Nazad">←</button>
-        <img src="${f.img}" alt="${f.name}">
+        <img src="${f.img}" alt="${f.name}" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(f.name)}&backgroundType=gradientLinear';">
         <div>
           <h3>${f.name}</h3>
           <span>${f.role}</span>

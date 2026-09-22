@@ -2418,6 +2418,10 @@ html[data-theme="light"] .theme-toggle .icon-moon {
   font-size: 23px;
 }
 
+.empty-state .btn {
+  margin-top: 18px;
+}
+
 .empty-state h3 {
   color: var(--heading);
   margin-bottom: 7px;
