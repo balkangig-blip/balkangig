@@ -632,6 +632,83 @@ function initProjectChoice() {
 }
 
 /* =========================================================
+   ZAŠTITA KOMUNIKACIJE — detekcija pokušaja razmene
+   kontakt podataka van platforme (email, telefon, WhatsApp,
+   Viber, Telegram, Instagram, Facebook, Discord, Skype...).
+
+   Ovo je frontend heuristika (nema pravog backend moderatora).
+   Cilj je da smanji, a ne da 100% spreči, izlazak komunikacije
+   sa platforme — i da ne blokira normalan sadržaj
+   (npr. "HTML5", "email marketing", "Instagram marketing").
+   ========================================================= */
+
+const CONTACT_WARNING_MESSAGE =
+  "Radi zaštite obe strane, komunikacija i plaćanje treba da ostanu na BalkanGigu. " +
+  "Deljenje direktnih kontakt podataka može ukloniti zaštitu projekta i pogodnosti platforme.";
+
+const CONTACT_PLATFORM_WORDS = [
+  "whatsapp", "watsap", "vatsap", "viber", "telegram", "tviter", "twitter",
+  "fejsbuk", "facebook", "diskord", "discord", "skype", "snapchat", "snepčet",
+  "messenger", "linkedin", "tiktok"
+];
+
+const CONTACT_EMAIL_PROVIDERS = [
+  "gmail", "yahoo", "hotmail", "outlook", "protonmail", "icloud"
+];
+
+const CONTACT_DOT_WORDS = ["tačka", "tacka", "dot"];
+
+const CONTACT_INVITATION_SIGNALS = [
+  "dodaj me", "pišite mi", "pisi mi", "piši mi", "kontaktiraj me", "moj broj",
+  "broj je", "broj:", "pozovi me", "javi mi se na", "napiši mi na",
+  "dm me", "izvan platforme", "van platforme", "direktno na", "nazovi me",
+  "moj majl", "moj mejl", "moj email"
+];
+
+const CONTACT_NUMBER_WORDS = [
+  "nula", "jedan", "jedna", "dva", "dve", "tri", "četiri", "cetiri",
+  "pet", "šest", "sest", "sedam", "osam", "devet"
+];
+
+function detectContactAttempt(rawText) {
+  const text = (rawText || "").trim();
+  if (!text) return false;
+  const t = text.toLowerCase();
+
+  // 1) Standardna email adresa
+  const emailRegex = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
+  if (emailRegex.test(text)) return true;
+
+  // 2) Namerno "prikrivena" email adresa: "ime (at) gmail (dot) com"
+  const hasProvider = CONTACT_EMAIL_PROVIDERS.some(p => t.includes(p));
+  const hasDotWord = CONTACT_DOT_WORDS.some(w => t.includes(w));
+  if (hasProvider && (hasDotWord || t.includes(" at "))) return true;
+
+  // 3) Broj telefona — niz cifara (sa ili bez razmaka/crtica/tačaka), 8+ cifara ukupno
+  const phoneLike = text.match(/(\+?\d[\d\s\-.()]{5,}\d)/g) || [];
+  const hasPhoneNumber = phoneLike.some(seq => seq.replace(/\D/g, "").length >= 8);
+  if (hasPhoneNumber) return true;
+
+  // 4) Cifre napisane rečima ("nula šest četiri jedan dva tri...")
+  const words = t.split(/[^a-zšđčćžа-я]+/i).filter(Boolean);
+  let run = 0, maxRun = 0;
+  for (const w of words) {
+    if (CONTACT_NUMBER_WORDS.includes(w)) { run++; maxRun = Math.max(maxRun, run); }
+    else run = 0;
+  }
+  if (maxRun >= 5) return true;
+
+  // 5) Pominjanje platforme za poruke ZAJEDNO sa pozivom da se pređe na nju
+  //    (samo pominjanje reči poput "Instagram" ili "email marketing" se NE blokira)
+  const hasPlatform = CONTACT_PLATFORM_WORDS.some(p => t.includes(p));
+  const hasHandle = /(^|\s)@[a-z0-9_.]{2,}/i.test(text);
+  const hasInvitation = CONTACT_INVITATION_SIGNALS.some(s => t.includes(s));
+  if (hasPlatform && (hasHandle || hasInvitation)) return true;
+
+  return false;
+}
+
+/* =========================================================
    PORUKE — chat u aplikaciji + plaćanje preko PayPal-a
    Sve poruke i statusi poslova čuvaju se lokalno
    (localStorage) jer sajt nema pravi backend/server.
@@ -696,8 +773,29 @@ function initChatPage() {
   const textarea = document.getElementById("chatTextarea");
   const sendBtn = document.getElementById("chatSendBtn");
   const backBtn = document.getElementById("chatBackBtn");
+  const contactWarning = document.getElementById("contactWarning");
 
   let currentId = null;
+  let contactWarningTimer = null;
+
+  function showContactWarning() {
+    if (!contactWarning) return;
+    contactWarning.textContent = "🛡️ " + CONTACT_WARNING_MESSAGE;
+    contactWarning.classList.add("show");
+    textarea.classList.remove("input-shake");
+    void textarea.offsetWidth;
+    textarea.classList.add("input-shake");
+    clearTimeout(contactWarningTimer);
+    contactWarningTimer = setTimeout(() => {
+      contactWarning.classList.remove("show");
+    }, 6000);
+  }
+
+  function hideContactWarning() {
+    if (!contactWarning) return;
+    clearTimeout(contactWarningTimer);
+    contactWarning.classList.remove("show");
+  }
 
   function conversationPreview(id) {
     const msgs = getChatMessages(id);
@@ -793,11 +891,21 @@ function initChatPage() {
           <span>${f.role}</span>
         </div>
       </div>
-      <span class="job-status-badge" id="chatJobBadge"></span>
+      <div class="chat-window-head-actions">
+        <span class="job-status-badge" id="chatJobBadge"></span>
+        <button type="button" class="chat-report-btn" id="chatReportBtn" title="Prijavi razgovor" aria-label="Prijavi razgovor">🚩</button>
+      </div>
     `;
     document.getElementById("chatBackBtnInner").addEventListener("click", () => {
       shell.classList.remove("chat-open");
     });
+
+    const reportBtnInner = document.getElementById("chatReportBtn");
+    if (reportBtnInner) {
+      reportBtnInner.addEventListener("click", () => {
+        if (window.__balkanGigOpenReportModal) window.__balkanGigOpenReportModal(f);
+      });
+    }
 
     renderJobPanel(f);
     renderMessages(id);
@@ -808,6 +916,13 @@ function initChatPage() {
   function sendMessage() {
     const text = textarea.value.trim();
     if (!text || currentId === null) return;
+
+    if (detectContactAttempt(text)) {
+      showContactWarning();
+      return;
+    }
+    hideContactWarning();
+
     const msgs = getChatMessages(currentId);
     msgs.push({ from: "me", text, time: Date.now() });
     saveChatMessages(currentId, msgs);
@@ -845,6 +960,7 @@ function initChatPage() {
       sendMessage();
     }
   });
+  textarea.addEventListener("input", hideContactWarning);
   if (searchEl) searchEl.addEventListener("input", () => renderList(searchEl.value));
   if (backBtn) backBtn.addEventListener("click", () => shell.classList.remove("chat-open"));
 
@@ -982,6 +1098,101 @@ function openPaymentModal(f) {
   if (window.__balkanGigOpenPayModal) window.__balkanGigOpenPayModal(f);
 }
 
+/* =========================================================
+   PRIJAVA RAZGOVORA (MODERACIJA)
+   Frontend priprema za moderaciju: korisnik može da prijavi
+   razgovor. Prijava se čuva lokalno (demo) — pravi sistem
+   pregleda i ograničenja naloga zahteva backend.
+   ========================================================= */
+
+const REPORT_REASONS = [
+  "Pokušaj razmene kontakta van platforme",
+  "Neprimereno ponašanje ili jezik",
+  "Sumnja na prevaru",
+  "Spam ili neželjene poruke",
+  "Drugo"
+];
+
+function initReportModal() {
+  const backdrop = document.getElementById("reportModalBackdrop");
+  if (!backdrop) return;
+
+  const closeBtn = document.getElementById("reportModalClose");
+  const body = document.getElementById("reportModalBody");
+
+  function close() {
+    backdrop.classList.remove("open");
+  }
+
+  closeBtn.addEventListener("click", close);
+  backdrop.addEventListener("click", (e) => { if (e.target === backdrop) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+
+  window.__balkanGigOpenReportModal = function (f) {
+    if (!f) return;
+    body.innerHTML = `
+      <p style="margin-bottom:16px;">Prijavi razgovor sa "${f.name}" ako primetiš pokušaj izlaska sa platforme ili neprimereno ponašanje. BalkanGig tim će pregledati prijavu.</p>
+      <div class="report-reasons">
+        ${REPORT_REASONS.map((r, i) => `
+          <label class="report-reason">
+            <input type="radio" name="reportReason" value="${r}" ${i === 0 ? "checked" : ""}>
+            <span>${r}</span>
+          </label>
+        `).join("")}
+      </div>
+      <div class="field full" style="margin-top:14px;">
+        <label for="reportNote">Dodatna napomena <span class="opt">(opciono)</span></label>
+        <textarea id="reportNote" placeholder="Opiši ukratko šta se dogodilo..."></textarea>
+      </div>
+      <button type="button" class="btn btn-primary btn-block" id="reportSubmitBtn" style="margin-top:18px;">Pošalji prijavu</button>
+    `;
+    backdrop.classList.add("open");
+
+    document.getElementById("reportSubmitBtn").addEventListener("click", () => {
+      try {
+        const reports = JSON.parse(localStorage.getItem("bg_reports") || "[]");
+        const reason = body.querySelector('input[name="reportReason"]:checked');
+        reports.push({
+          freelancerId: f.id,
+          freelancerName: f.name,
+          reason: reason ? reason.value : REPORT_REASONS[0],
+          note: (document.getElementById("reportNote") || {}).value || "",
+          time: Date.now()
+        });
+        localStorage.setItem("bg_reports", JSON.stringify(reports));
+      } catch (e) { /* localStorage nedostupan */ }
+
+      body.innerHTML = `
+        <div class="pay-success">
+          <div class="pay-success-icon">✓</div>
+          <h3>Prijava je poslata</h3>
+          <p>Hvala — BalkanGig tim će pregledati ovaj razgovor.</p>
+        </div>
+      `;
+      setTimeout(close, 1600);
+    });
+  };
+}
+
+/* ---------- Objavi projekat: suptilan savet ako opis sadrži kontakt ---------- */
+function initContactFieldHints() {
+  const ids = ["bp-potreba", "dz-opis"];
+  ids.forEach(id => {
+    const field = document.getElementById(id);
+    if (!field) return;
+    const hint = document.createElement("p");
+    hint.className = "field-hint";
+    hint.textContent = "🛡️ " + CONTACT_WARNING_MESSAGE;
+    field.insertAdjacentElement("afterend", hint);
+
+    function check() {
+      hint.classList.toggle("show", detectContactAttempt(field.value));
+    }
+    field.addEventListener("input", check);
+    field.addEventListener("blur", check);
+  });
+}
+
 /* ---------- Prijava / Registracija: role toggle ---------- */
 function initAuthToggle() {
   const toggle = document.querySelector(".role-toggle");
@@ -1009,5 +1220,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initAuthToggle();
   initChatPage();
   initPaymentModal();
+  initReportModal();
+  initContactFieldHints();
   initScrollReveal();
 });

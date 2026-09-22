@@ -87,6 +87,7 @@
         <div id="chatWindowBody" style="display:none; flex:1; min-height:0; flex-direction:column;">
           <div class="chat-job-panel" id="chatJobPanel"></div>
           <div class="chat-messages" id="chatMessages"></div>
+          <div class="contact-warning" id="contactWarning" role="alert" aria-live="polite"></div>
           <div class="chat-input-row" id="chatInputRow">
             <textarea id="chatTextarea" rows="1" placeholder="Napiši poruku..."></textarea>
             <button type="button" class="chat-send-btn" id="chatSendBtn" aria-label="Pošalji">➤</button>
@@ -109,6 +110,18 @@
       <p>Plaćanje se obavlja preko PayPal-a, u okviru aplikacije.</p>
     </div>
     <div id="payModalBody"></div>
+  </div>
+</div>
+
+<!-- MODAL: Prijava razgovora -->
+<div class="choice-modal-backdrop pay-modal" id="reportModalBackdrop">
+  <div class="choice-modal" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle" style="max-width:460px;">
+    <button class="choice-modal-close" id="reportModalClose" aria-label="Zatvori">&times;</button>
+    <div class="choice-modal-head">
+      <span class="kicker">Moderacija</span>
+      <h2 id="reportModalTitle">Prijavi razgovor</h2>
+    </div>
+    <div id="reportModalBody"></div>
   </div>
 </div>
 
@@ -140,8 +153,8 @@
         <h4>Podrška</h4>
         <ul>
           <li><a href="poruke.html">Chat podrška u aplikaciji</a></li>
-          <li><a href="#">Uslovi korišćenja</a></li>
-          <li><a href="#">Politika privatnosti</a></li>
+          <li><a href="uslovi-koriscenja.html">Uslovi korišćenja</a></li>
+          <li><a href="politika-privatnosti.html">Politika privatnosti</a></li>
         </ul>
       </div>
     </div>
