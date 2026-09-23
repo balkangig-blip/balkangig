@@ -1455,14 +1455,25 @@ async function initChatPage() {
   }
 
   // Realtime: osveži razgovor kad stigne nova poruka (od mene ili sagovornika)
-  let realtimeChannel = window.supabase
-    .channel("messages-" + myId)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, async (payload) => {
-      const m = payload.new;
-      if (m.sender_id !== myId && m.receiver_id !== myId) return; // nije moja poruka
-      await checkForNewMessages();
-    })
-    .subscribe();
+  let realtimeChannel = null;
+
+  function subscribeRealtime() {
+    realtimeChannel = window.supabase
+      .channel("messages-" + myId)
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, async (payload) => {
+        const m = payload.new;
+        if (m.sender_id !== myId && m.receiver_id !== myId) return; // nije moja poruka
+        await checkForNewMessages();
+      })
+      .subscribe((status, err) => {
+        // Otvori konzolu u browseru (F12 → Console) da vidiš ovaj status.
+        // Očekivano: "SUBSCRIBED". Ako piše "CHANNEL_ERROR" ili "TIMED_OUT",
+        // realtime konekcija ne uspeva (najčešće zbog RLS SELECT politike
+        // na tabeli messages, ili mrežnog/firewall problema).
+        console.log("[BalkanGig chat] Realtime status:", status, err || "");
+      });
+  }
+  subscribeRealtime();
 
   // Fallback polling: proveri nove poruke na svake 4 sekunde, bez obzira
   // na realtime — ovo garantuje da poruke stižu i ako websocket konekcija
@@ -1472,31 +1483,20 @@ async function initChatPage() {
     checkForNewMessages();
   }, POLL_INTERVAL_MS);
 
-  // Kad se korisnik vrati na tab (ili ga fokusira), odmah proveri poruke
-  // i skloni notifikaciju iz naslova.
+  // Kad se korisnik vrati na tab (ili ga fokusira), odmah proveri poruke,
+  // skloni notifikaciju iz naslova, i ako je websocket konekcija u
+  // međuvremenu ispala (npr. laptop je bio u spavanju), ponovo se pretplati.
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       markAsRead();
       checkForNewMessages();
+      if (!realtimeChannel || realtimeChannel.state !== "joined") {
+        if (realtimeChannel) window.supabase.removeChannel(realtimeChannel);
+        subscribeRealtime();
+      }
     }
   });
   window.addEventListener("focus", markAsRead);
-
-  // Ako websocket konekcija ispadne (npr. laptop je bio u spavanju), pokušaj
-  // da se ponovo pretplatiš kad tab opet postane vidljiv.
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && realtimeChannel && realtimeChannel.state !== "joined") {
-      window.supabase.removeChannel(realtimeChannel);
-      realtimeChannel = window.supabase
-        .channel("messages-" + myId)
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, async (payload) => {
-          const m = payload.new;
-          if (m.sender_id !== myId && m.receiver_id !== myId) return;
-          await checkForNewMessages();
-        })
-        .subscribe();
-    }
-  });
 
   // Izloži funkciju za plaćanje globalno (koristi je payment modal)
   window.__balkanGigHandlePaymentSuccess = function (id) {
