@@ -103,6 +103,49 @@ const FREELANCERS = [
   },
 ];
 
+/* ---------- Supabase: učitavanje pravih freelancera iz profiles tabele ---------- */
+async function loadFreelancersFromSupabase() {
+  if (!window.supabase) return; // supabase-client.js se nije učitao — ostaju demo podaci
+
+  try {
+    const { data, error } = await window.supabase
+      .from("profiles")
+      .select("*")
+      .eq("role", "freelancer");
+
+    if (error) {
+      console.error("Greška pri učitavanju freelancera:", error.message);
+      return; // ostaju demo podaci kao fallback
+    }
+    if (!data || data.length === 0) return; // baza je prazna — ostaju demo podaci
+
+    const categoryNames = Object.fromEntries(CATEGORIES.map(c => [c.id, c.name]));
+
+    const mapped = data.map(p => ({
+      id: p.id,
+      name: p.full_name,
+      role: categoryNames[p.category] || "Freelancer",
+      category: p.category || "",
+      location: p.location || "",
+      rating: Number(p.rating) || 0,
+      reviews: p.reviews_count || 0,
+      done: p.done_count || 0,
+      price: p.price_from || "Po dogovoru",
+      img: p.avatar_url || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(p.full_name)}&backgroundType=gradientLinear`,
+      desc: p.bio || "",
+      tags: p.tags || []
+    }));
+
+    // Mutacija postojećeg niza (ne reasignacija) — sve funkcije koje
+    // već referenciraju FREELANCERS odmah vide nove podatke.
+    FREELANCERS.length = 0;
+    FREELANCERS.push(...mapped);
+  } catch (e) {
+    console.error("Neočekivana greška pri učitavanju freelancera:", e);
+    // ostaju demo podaci kao fallback
+  }
+}
+
 /* ---------- Pomoćne funkcije ---------- */
 function renderStars(rating) {
   const full = Math.round(rating);
@@ -525,8 +568,9 @@ function initProfilePage() {
   const wrap = document.getElementById("profileWrap");
   if (!wrap) return;
   const params = new URLSearchParams(window.location.search);
-  const id = parseInt(params.get("id"), 10) || 1;
-  const f = FREELANCERS.find(x => x.id === id) || FREELANCERS[0];
+  const id = params.get("id");
+  const f = FREELANCERS.find(x => String(x.id) === String(id)) || FREELANCERS[0];
+  if (!f) return;
 
   document.title = `${f.name} — ${f.role} | BalkanGig`;
   document.getElementById("pAvatar").src = f.img;
@@ -946,7 +990,7 @@ function getChatMessages(id) {
   if (raw) {
     try { return JSON.parse(raw); } catch (e) { /* fallthrough */ }
   }
-  const f = FREELANCERS.find(x => x.id === id);
+  const f = FREELANCERS.find(x => String(x.id) === String(id));
   const seed = [{
     from: "them",
     text: f ? `Zdravo! Hvala što si me kontaktirao/la. Slobodno mi opiši šta ti je potrebno za projekat.` : "Zdravo!",
@@ -1034,7 +1078,7 @@ function initChatPage() {
       const status = getJobStatus(f.id);
       const dotClass = status === "placeno" ? "paid" : status === "zavrseno" ? "done" : "";
       return `
-        <button type="button" class="chat-list-item${f.id === currentId ? " active" : ""}" data-id="${f.id}">
+        <button type="button" class="chat-list-item${String(f.id) === String(currentId) ? " active" : ""}" data-id="${f.id}">
           <img class="chat-list-avatar" src="${f.img}" alt="${f.name}" loading="lazy" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(f.name)}&backgroundType=gradientLinear';">
           <div class="chat-list-item-body">
             <div class="chat-list-item-top">
@@ -1048,7 +1092,7 @@ function initChatPage() {
     }).join("") || `<div style="padding:20px; color:var(--text-soft); font-size:0.85rem;">Nema razgovora koji odgovaraju pretrazi.</div>`;
 
     listEl.querySelectorAll(".chat-list-item").forEach(btn => {
-      btn.addEventListener("click", () => selectConversation(parseInt(btn.dataset.id, 10)));
+      btn.addEventListener("click", () => selectConversation(btn.dataset.id));
     });
   }
 
@@ -1131,7 +1175,7 @@ function initChatPage() {
 
   function selectConversation(id) {
     currentId = id;
-    const f = FREELANCERS.find(x => x.id === id);
+    const f = FREELANCERS.find(x => String(x.id) === String(id));
     if (!f) return;
 
     shell.classList.add("chat-open");
@@ -1219,7 +1263,7 @@ function initChatPage() {
     const msgs = getChatMessages(id);
     msgs.push({ from: "system", text: "✅ Projekat je označen kao završen. Klijent sada može da plati posao.", time: Date.now() });
     saveChatMessages(id, msgs);
-    const f = FREELANCERS.find(x => x.id === id);
+    const f = FREELANCERS.find(x => String(x.id) === String(id));
     renderJobPanel(f);
     renderMessages(id);
     renderList(searchEl ? searchEl.value : "");
@@ -1292,8 +1336,8 @@ function initChatPage() {
   renderList("");
 
   const params = new URLSearchParams(window.location.search);
-  const preId = parseInt(params.get("id"), 10);
-  if (preId && FREELANCERS.some(f => f.id === preId)) {
+  const preId = params.get("id");
+  if (preId && FREELANCERS.some(f => String(f.id) === String(preId))) {
     selectConversation(preId);
   }
 
@@ -1303,8 +1347,8 @@ function initChatPage() {
     const msgs = getChatMessages(id);
     msgs.push({ from: "system", text: "💸 Plaćanje je uspešno izvršeno preko PayPal-a. Hvala na saradnji!", time: Date.now() });
     saveChatMessages(id, msgs);
-    if (id === currentId) {
-      const f = FREELANCERS.find(x => x.id === id);
+    if (String(id) === String(currentId)) {
+      const f = FREELANCERS.find(x => String(x.id) === String(id));
       renderJobPanel(f);
       renderMessages(id);
     }
@@ -1576,11 +1620,12 @@ function initAuthToggle() {
 }
 
 /* ---------- Init ---------- */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   initThemeToggle();
   initClickAnimations();
   initMobileNav();
   initHeroSearch();
+  await loadFreelancersFromSupabase(); // popuni FREELANCERS pre renderovanja
   populateHomepage();
   initListingPage();
   initProfilePage();
