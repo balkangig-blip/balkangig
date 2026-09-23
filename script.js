@@ -981,45 +981,23 @@ const CHAT_REPLIES = [
   "Radim na tome, javiću ti čim imam prvu verziju."
 ];
 
-function chatKey(id, suffix) {
-  return `bg_chat_${id}_${suffix}`;
-}
-
-function getChatMessages(id) {
-  const raw = localStorage.getItem(chatKey(id, "msgs"));
-  if (raw) {
-    try { return JSON.parse(raw); } catch (e) { /* fallthrough */ }
-  }
-  const f = FREELANCERS.find(x => String(x.id) === String(id));
-  const seed = [{
-    from: "them",
-    text: f ? `Zdravo! Hvala što si me kontaktirao/la. Slobodno mi opiši šta ti je potrebno za projekat.` : "Zdravo!",
-    time: Date.now()
-  }];
-  saveChatMessages(id, seed);
-  return seed;
-}
-
-function saveChatMessages(id, msgs) {
-  localStorage.setItem(chatKey(id, "msgs"), JSON.stringify(msgs));
-}
-
-function getJobStatus(id) {
-  return localStorage.getItem(chatKey(id, "status")) || "u_toku";
-}
-
-function setJobStatus(id, status) {
-  localStorage.setItem(chatKey(id, "status"), status);
-}
-
 function formatChatTime(ts) {
   const d = new Date(ts);
   return d.toLocaleTimeString("sr-RS", { hour: "2-digit", minute: "2-digit" });
 }
 
-function initChatPage() {
+async function initChatPage() {
   const shell = document.getElementById("chatShell");
   if (!shell) return;
+  if (!window.supabase) return;
+
+  const { data: { session } } = await window.supabase.auth.getSession();
+  if (!session) {
+    // Poruke zahtevaju prijavu — bez naloga nema sa čijeg imena da se šalje poruka.
+    window.location.href = "prijava.html";
+    return;
+  }
+  const myId = session.user.id;
 
   const listEl = document.getElementById("chatListItems");
   const searchEl = document.getElementById("chatListSearch");
@@ -1028,7 +1006,6 @@ function initChatPage() {
   const windowBody = document.getElementById("chatWindowBody");
   const messagesEl = document.getElementById("chatMessages");
   const jobPanel = document.getElementById("chatJobPanel");
-  const inputRow = document.getElementById("chatInputRow");
   const textarea = document.getElementById("chatTextarea");
   const sendBtn = document.getElementById("chatSendBtn");
   const backBtn = document.getElementById("chatBackBtn");
@@ -1036,10 +1013,109 @@ function initChatPage() {
   const attachBtn = document.getElementById("chatAttachBtn");
   const fileInput = document.getElementById("chatFileInput");
 
-  const MAX_FILE_SIZE_FOR_PREVIEW = 4 * 1024 * 1024; // 4MB — granica za čuvanje sadržaja fajla u demo (localStorage)
+  const MAX_FILE_SIZE_FOR_PREVIEW = 4 * 1024 * 1024; // 4MB
 
   let currentId = null;
   let contactWarningTimer = null;
+  let allMessages = []; // sve prave poruke iz baze koje uključuju mene
+  const partnerCache = {}; // id -> { id, name, img, role }
+
+  /* ---- Job status i fajlovi ostaju lokalni (demo) po paru korisnika ----
+     Napomena: status posla (u toku/završeno/plaćeno) i prilozi fajlova
+     još nisu deo baze (nisu vezani za konkretan "project"), pa i dalje
+     žive u localStorage-u, samo sad odvojeno po (moj-id + sagovornik-id)
+     paru umesto samo po id-u freelancera. Prave poruke (tekst) idu u bazu. */
+  function pairKey(otherId, suffix) {
+    return `bg_chat_${myId}_${otherId}_${suffix}`;
+  }
+  function getJobStatus(otherId) {
+    return localStorage.getItem(pairKey(otherId, "status")) || "u_toku";
+  }
+  function setJobStatus(otherId, status) {
+    localStorage.setItem(pairKey(otherId, "status"), status);
+  }
+  function getLocalFileMessages(otherId) {
+    const raw = localStorage.getItem(pairKey(otherId, "files"));
+    if (!raw) return [];
+    try { return JSON.parse(raw); } catch (e) { return []; }
+  }
+  function saveLocalFileMessages(otherId, arr) {
+    localStorage.setItem(pairKey(otherId, "files"), JSON.stringify(arr));
+  }
+
+  /* ---- Pravi profil sagovornika (freelancer ili klijent) ---- */
+  async function fetchPartnerProfile(id) {
+    if (partnerCache[id]) return partnerCache[id];
+
+    const fl = FREELANCERS.find(f => String(f.id) === String(id));
+    if (fl) {
+      partnerCache[id] = { id: fl.id, name: fl.name, img: fl.img, role: fl.role };
+      return partnerCache[id];
+    }
+
+    const { data } = await window.supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url, category, role")
+      .eq("id", id)
+      .single();
+
+    const fallbackImg = (name) => `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || "Korisnik")}&backgroundType=gradientLinear`;
+
+    if (data) {
+      const categoryNames = Object.fromEntries(CATEGORIES.map(c => [c.id, c.name]));
+      partnerCache[id] = {
+        id: data.id,
+        name: data.full_name || "Korisnik",
+        img: data.avatar_url || fallbackImg(data.full_name),
+        role: data.role === "freelancer" ? (categoryNames[data.category] || "Freelancer") : "Klijent"
+      };
+    } else {
+      partnerCache[id] = { id, name: "Korisnik", img: fallbackImg(), role: "" };
+    }
+    return partnerCache[id];
+  }
+
+  /* ---- Učitavanje svih pravih poruka koje uključuju mene ---- */
+  async function loadAllMessages() {
+    const { data, error } = await window.supabase
+      .from("messages")
+      .select("*")
+      .or(`sender_id.eq.${myId},receiver_id.eq.${myId}`)
+      .order("created_at", { ascending: true });
+    allMessages = (!error && data) ? data : [];
+  }
+
+  function partnerIdsFromMessages() {
+    const ids = new Set();
+    allMessages.forEach(m => ids.add(m.sender_id === myId ? m.receiver_id : m.sender_id));
+    return Array.from(ids);
+  }
+
+  function dbMessagesWith(otherId) {
+    return allMessages
+      .filter(m => (m.sender_id === myId && m.receiver_id === otherId) || (m.sender_id === otherId && m.receiver_id === myId))
+      .map(m => ({ from: m.sender_id === myId ? "me" : "them", text: m.content, time: new Date(m.created_at).getTime() }));
+  }
+
+  function mergedMessagesWith(otherId) {
+    const fromDb = dbMessagesWith(otherId);
+    const fromFiles = getLocalFileMessages(otherId);
+    return [...fromDb, ...fromFiles].sort((a, b) => a.time - b.time);
+  }
+
+  function lastMessageWith(otherId) {
+    const msgs = mergedMessagesWith(otherId);
+    return msgs[msgs.length - 1] || null;
+  }
+
+  async function sendDbMessage(otherId, text) {
+    const { error } = await window.supabase.from("messages").insert({
+      sender_id: myId,
+      receiver_id: otherId,
+      content: text
+    });
+    return error;
+  }
 
   function showContactWarning() {
     if (!contactWarning) return;
@@ -1060,32 +1136,43 @@ function initChatPage() {
     contactWarning.classList.remove("show");
   }
 
-  function conversationPreview(id) {
-    const msgs = getChatMessages(id);
-    const last = msgs[msgs.length - 1];
-    if (!last) return "";
-    const prefix = last.from === "me" ? "Ti: " : "";
-    if (last.type === "file") return prefix + "📎 " + last.fileName;
-    return prefix + last.text;
-  }
+  const params = new URLSearchParams(window.location.search);
+  const preselectId = params.get("id");
 
-  function renderList(filter) {
+  async function renderList(filter) {
     const q = (filter || "").toLowerCase().trim();
-    const list = FREELANCERS.filter(f =>
-      !q || f.name.toLowerCase().includes(q) || f.role.toLowerCase().includes(q)
-    );
-    listEl.innerHTML = list.map(f => {
-      const status = getJobStatus(f.id);
+    const partnerIds = partnerIdsFromMessages();
+    if (preselectId && !partnerIds.includes(preselectId)) partnerIds.push(preselectId);
+
+    if (partnerIds.length === 0) {
+      listEl.innerHTML = `<div style="padding:20px; color:var(--text-soft); font-size:0.85rem;">Nemaš još nijedan razgovor. Otvori profil freelancera i klikni "Pošalji poruku" da započneš.</div>`;
+      return;
+    }
+
+    const profiles = await Promise.all(partnerIds.map(fetchPartnerProfile));
+
+    const sorted = profiles.slice().sort((a, b) => {
+      const la = lastMessageWith(a.id);
+      const lb = lastMessageWith(b.id);
+      return (lb ? lb.time : 0) - (la ? la.time : 0);
+    });
+
+    const filtered = sorted.filter(p => !q || p.name.toLowerCase().includes(q) || (p.role || "").toLowerCase().includes(q));
+
+    listEl.innerHTML = filtered.map(p => {
+      const status = getJobStatus(p.id);
       const dotClass = status === "placeno" ? "paid" : status === "zavrseno" ? "done" : "";
+      const last = lastMessageWith(p.id);
+      const preview = last ? ((last.from === "me" ? "Ti: " : "") + (last.type === "file" ? "📎 " + last.fileName : last.text)) : "Započni razgovor...";
       return `
-        <button type="button" class="chat-list-item${String(f.id) === String(currentId) ? " active" : ""}" data-id="${f.id}">
-          <img class="chat-list-avatar" src="${f.img}" alt="${f.name}" loading="lazy" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(f.name)}&backgroundType=gradientLinear';">
+        <button type="button" class="chat-list-item${String(p.id) === String(currentId) ? " active" : ""}" data-id="${p.id}">
+          <img class="chat-list-avatar" src="${p.img}" alt="${p.name}" loading="lazy" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(p.name)}&backgroundType=gradientLinear';">
           <div class="chat-list-item-body">
             <div class="chat-list-item-top">
-              <strong>${f.name}</strong>
+              <strong>${p.name}</strong>
               <span class="chat-status-dot ${dotClass}"></span>
             </div>
-            <div class="chat-list-item-preview">${conversationPreview(f.id)}</div>
+            <div class="chat-list-item-preview">${preview}</div>
           </div>
         </button>
       `;
@@ -1096,8 +1183,8 @@ function initChatPage() {
     });
   }
 
-  function renderJobPanel(f) {
-    const status = getJobStatus(f.id);
+  function renderJobPanel(p) {
+    const status = getJobStatus(p.id);
     let badgeClass = "", badgeText = "U toku";
     if (status === "zavrseno") { badgeClass = "done"; badgeText = "Završeno"; }
     if (status === "placeno") { badgeClass = "paid"; badgeText = "Plaćeno ✓"; }
@@ -1105,6 +1192,7 @@ function initChatPage() {
     document.getElementById("chatJobBadge").className = `job-status-badge ${badgeClass}`;
     document.getElementById("chatJobBadge").textContent = badgeText;
 
+    const priceLabel = p.price ? `Cena: ${p.price}` : "";
     let actionsHTML = "";
     if (status === "u_toku") {
       actionsHTML = `<button type="button" class="btn btn-sm btn-done" id="markDoneBtn">✅ Označi kao završeno</button>`;
@@ -1116,17 +1204,17 @@ function initChatPage() {
 
     jobPanel.innerHTML = `
       <div class="chat-job-panel-info">
-        <strong>Posao: ${f.role} za "${f.name}"</strong>
-        <span>Cena: ${f.price}</span>
+        <strong>Razgovor sa: ${p.name}${p.role ? " — " + p.role : ""}</strong>
+        <span>${priceLabel}</span>
       </div>
       <div class="chat-job-panel-actions">${actionsHTML}</div>
     `;
 
     const markBtn = document.getElementById("markDoneBtn");
-    if (markBtn) markBtn.addEventListener("click", () => markJobDone(f.id));
+    if (markBtn) markBtn.addEventListener("click", () => markJobDone(p.id));
 
     const payBtn = document.getElementById("payNowBtn");
-    if (payBtn) payBtn.addEventListener("click", () => openPaymentModal(f));
+    if (payBtn) payBtn.addEventListener("click", () => openPaymentModal(p));
   }
 
   function fileTypeIcon(name) {
@@ -1147,7 +1235,11 @@ function initChatPage() {
   }
 
   function renderMessages(id) {
-    const msgs = getChatMessages(id);
+    const msgs = mergedMessagesWith(id);
+    if (msgs.length === 0) {
+      messagesEl.innerHTML = `<div class="msg msg-system">Ovo je početak vašeg razgovora. Napiši prvu poruku! 👋</div>`;
+      return;
+    }
     messagesEl.innerHTML = msgs.map(m => {
       const cls = m.from === "me" ? "msg-own" : m.from === "system" ? "msg-system" : "msg-theirs";
       if (m.type === "file") {
@@ -1173,10 +1265,10 @@ function initChatPage() {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 
-  function selectConversation(id) {
+  async function selectConversation(id) {
     currentId = id;
-    const f = FREELANCERS.find(x => String(x.id) === String(id));
-    if (!f) return;
+    const p = await fetchPartnerProfile(id);
+    if (!p) return;
 
     shell.classList.add("chat-open");
     windowEmpty.style.display = "none";
@@ -1185,10 +1277,10 @@ function initChatPage() {
     windowHead.innerHTML = `
       <div class="chat-window-head-info">
         <button type="button" class="chat-back-btn" id="chatBackBtnInner" aria-label="Nazad">←</button>
-        <img src="${f.img}" alt="${f.name}" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(f.name)}&backgroundType=gradientLinear';">
+        <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(p.name)}&backgroundType=gradientLinear';">
         <div>
-          <h3>${f.name}</h3>
-          <span>${f.role}</span>
+          <h3>${p.name}</h3>
+          <span>${p.role || ""}</span>
         </div>
       </div>
       <div class="chat-window-head-actions">
@@ -1205,31 +1297,31 @@ function initChatPage() {
     const reportBtnInner = document.getElementById("chatReportBtn");
     if (reportBtnInner) {
       reportBtnInner.addEventListener("click", () => {
-        if (window.__balkanGigOpenReportModal) window.__balkanGigOpenReportModal(f);
+        if (window.__balkanGigOpenReportModal) window.__balkanGigOpenReportModal(p);
       });
     }
 
     const callBtnInner = document.getElementById("chatCallBtn");
     if (callBtnInner) {
       callBtnInner.addEventListener("click", () => {
-        if (window.__balkanGigOpenCallModal) window.__balkanGigOpenCallModal(f, "audio");
+        if (window.__balkanGigOpenCallModal) window.__balkanGigOpenCallModal(p, "audio");
       });
     }
 
     const videoBtnInner = document.getElementById("chatVideoBtn");
     if (videoBtnInner) {
       videoBtnInner.addEventListener("click", () => {
-        if (window.__balkanGigOpenCallModal) window.__balkanGigOpenCallModal(f, "video");
+        if (window.__balkanGigOpenCallModal) window.__balkanGigOpenCallModal(p, "video");
       });
     }
 
-    renderJobPanel(f);
+    renderJobPanel(p);
     renderMessages(id);
-    renderList(searchEl ? searchEl.value : "");
+    await renderList(searchEl ? searchEl.value : "");
     textarea.focus();
   }
 
-  function sendMessage() {
+  async function sendMessage() {
     const text = textarea.value.trim();
     if (!text || currentId === null) return;
 
@@ -1239,42 +1331,36 @@ function initChatPage() {
     }
     hideContactWarning();
 
-    const msgs = getChatMessages(currentId);
-    msgs.push({ from: "me", text, time: Date.now() });
-    saveChatMessages(currentId, msgs);
     textarea.value = "";
-    renderMessages(currentId);
-    renderList(searchEl ? searchEl.value : "");
+    sendBtn.disabled = true;
 
-    setTimeout(() => {
-      const reply = CHAT_REPLIES[Math.floor(Math.random() * CHAT_REPLIES.length)];
-      const updated = getChatMessages(currentId);
-      updated.push({ from: "them", text: reply, time: Date.now() });
-      saveChatMessages(currentId, updated);
-      if (currentId !== null) {
-        renderMessages(currentId);
-        renderList(searchEl ? searchEl.value : "");
-      }
-    }, 900);
+    const error = await sendDbMessage(currentId, text);
+    sendBtn.disabled = false;
+
+    if (error) {
+      console.error("Greška pri slanju poruke:", error.message);
+      textarea.value = text; // vrati tekst nazad da korisnik ne izgubi poruku
+      return;
+    }
+
+    await loadAllMessages();
+    renderMessages(currentId);
+    await renderList(searchEl ? searchEl.value : "");
   }
 
   function markJobDone(id) {
     setJobStatus(id, "zavrseno");
-    const msgs = getChatMessages(id);
-    msgs.push({ from: "system", text: "✅ Projekat je označen kao završen. Klijent sada može da plati posao.", time: Date.now() });
-    saveChatMessages(id, msgs);
-    const f = FREELANCERS.find(x => String(x.id) === String(id));
-    renderJobPanel(f);
-    renderMessages(id);
+    partnerCache[id] && renderJobPanel(partnerCache[id]);
     renderList(searchEl ? searchEl.value : "");
   }
 
   function sendFileMessage(file) {
     if (currentId === null) return;
+    const otherId = currentId;
 
     function pushFileMsg(fileData) {
-      const msgs = getChatMessages(currentId);
-      msgs.push({
+      const files = getLocalFileMessages(otherId);
+      files.push({
         from: "me",
         type: "file",
         fileName: file.name,
@@ -1282,24 +1368,14 @@ function initChatPage() {
         fileData: fileData || null,
         time: Date.now()
       });
-      saveChatMessages(currentId, msgs);
-      renderMessages(currentId);
+      saveLocalFileMessages(otherId, files);
+      renderMessages(otherId);
       renderList(searchEl ? searchEl.value : "");
-
-      setTimeout(() => {
-        const updated = getChatMessages(currentId);
-        updated.push({ from: "them", text: "Primio/la sam fajl, hvala! Pogledaću i javiti ti se.", time: Date.now() });
-        saveChatMessages(currentId, updated);
-        if (currentId !== null) {
-          renderMessages(currentId);
-          renderList(searchEl ? searchEl.value : "");
-        }
-      }, 900);
     }
 
-    // Slike do 4MB čuvamo kao data URL (prikaz + preuzimanje). Veći ili
-    // ne-slikovni fajlovi u ovoj demo verziji (bez pravog servera/storage-a)
-    // se prikazuju kao poslati, ali bez pravog sadržaja za preuzimanje.
+    // Napomena: prilozi fajlova su i dalje samo lokalni demo (čuvaju se u
+    // ovom browseru, ne u bazi) — za pravo deljenje fajlova između korisnika
+    // trebalo bi dodati Supabase Storage bucket za chat-priloge.
     if (file.size <= MAX_FILE_SIZE_FOR_PREVIEW && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onload = () => pushFileMsg(reader.result);
@@ -1333,28 +1409,35 @@ function initChatPage() {
   if (searchEl) searchEl.addEventListener("input", () => renderList(searchEl.value));
   if (backBtn) backBtn.addEventListener("click", () => shell.classList.remove("chat-open"));
 
-  renderList("");
+  await loadAllMessages();
+  await renderList("");
 
-  const params = new URLSearchParams(window.location.search);
-  const preId = params.get("id");
-  if (preId && FREELANCERS.some(f => String(f.id) === String(preId))) {
-    selectConversation(preId);
+  if (preselectId) {
+    await selectConversation(preselectId);
   }
+
+  // Realtime: osveži razgovor kad stigne nova poruka (od mene ili sagovornika)
+  window.supabase
+    .channel("messages-" + myId)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, async (payload) => {
+      const m = payload.new;
+      if (m.sender_id !== myId && m.receiver_id !== myId) return; // nije moja poruka
+      await loadAllMessages();
+      if (currentId !== null) renderMessages(currentId);
+      await renderList(searchEl ? searchEl.value : "");
+    })
+    .subscribe();
 
   // Izloži funkciju za plaćanje globalno (koristi je payment modal)
   window.__balkanGigHandlePaymentSuccess = function (id) {
     setJobStatus(id, "placeno");
-    const msgs = getChatMessages(id);
-    msgs.push({ from: "system", text: "💸 Plaćanje je uspešno izvršeno preko PayPal-a. Hvala na saradnji!", time: Date.now() });
-    saveChatMessages(id, msgs);
-    if (String(id) === String(currentId)) {
-      const f = FREELANCERS.find(x => String(x.id) === String(id));
-      renderJobPanel(f);
-      renderMessages(id);
+    if (String(id) === String(currentId) && partnerCache[id]) {
+      renderJobPanel(partnerCache[id]);
     }
     renderList(searchEl ? searchEl.value : "");
   };
 }
+
 
 /* =========================================================
    PLAĆANJE — PayPal modal (u aplikaciji, bez napuštanja sajta)
