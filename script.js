@@ -575,7 +575,12 @@ function initForms() {
     });
   });
 
+  // loginForm i regForm imaju sopstvenu Supabase logiku (initSupabaseAuth).
+  // brzaForm i detaljnoForm imaju sopstvenu logiku (initProjectForms).
+  // Ovde ostaju samo forme koje nemaju posebnu backend logiku (demo ponašanje).
+  const handledIds = ["loginForm", "regForm", "brzaForm", "detaljnoForm"];
   document.querySelectorAll("form[data-validate]").forEach(form => {
+    if (handledIds.includes(form.id)) return;
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const success = form.parentElement.querySelector(".form-success");
@@ -586,6 +591,211 @@ function initForms() {
       form.reset();
     });
   });
+}
+
+/* =========================================================
+   SUPABASE: autentikacija (registracija, prijava, header stanje)
+   ========================================================= */
+function showFormError(form, message) {
+  let err = form.querySelector(".form-error");
+  if (!err) {
+    err = document.createElement("div");
+    err.className = "form-error";
+    err.style.cssText = "background:#fee2e2;color:#b91c1c;padding:10px 14px;border-radius:8px;margin-bottom:16px;font-size:14px;";
+    form.prepend(err);
+  }
+  err.textContent = message;
+}
+
+function clearFormError(form) {
+  const err = form.querySelector(".form-error");
+  if (err) err.remove();
+}
+
+async function initSupabaseAuth() {
+  if (!window.supabase) return;
+
+  // ---- Registracija ----
+  const regForm = document.getElementById("regForm");
+  if (regForm) {
+    regForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearFormError(regForm);
+      const submitBtn = regForm.querySelector("button[type=submit]");
+      const activeRoleBtn = document.querySelector(".role-toggle button.active");
+      const role = activeRoleBtn && activeRoleBtn.dataset.role === "freelancer" ? "freelancer" : "klijent";
+
+      const fullName = document.getElementById("re-ime").value.trim();
+      const email = document.getElementById("re-email").value.trim();
+      const password = document.getElementById("re-lozinka").value;
+
+      if (password.length < 8) {
+        showFormError(regForm, "Lozinka mora imati najmanje 8 karaktera.");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Kreiranje naloga...";
+
+      const { data, error } = await window.supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName, role } }
+      });
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Registruj se";
+
+      if (error) {
+        showFormError(regForm, "Greška: " + error.message);
+        return;
+      }
+
+      const success = regForm.parentElement.querySelector(".form-success");
+      if (success) {
+        success.textContent = "✅ Nalog je uspešno napravljen! Preusmeravamo te...";
+        success.classList.add("show");
+      }
+      regForm.reset();
+      setTimeout(() => { window.location.href = "index.html"; }, 1200);
+    });
+  }
+
+  // ---- Prijava ----
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearFormError(loginForm);
+      const submitBtn = loginForm.querySelector("button[type=submit]");
+      const email = document.getElementById("li-email").value.trim();
+      const password = document.getElementById("li-lozinka").value;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Prijavljivanje...";
+
+      const { data, error } = await window.supabase.auth.signInWithPassword({ email, password });
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Prijavi se";
+
+      if (error) {
+        showFormError(loginForm, "Pogrešan email ili lozinka.");
+        return;
+      }
+
+      const success = loginForm.parentElement.querySelector(".form-success");
+      if (success) success.classList.add("show");
+      setTimeout(() => { window.location.href = "index.html"; }, 800);
+    });
+  }
+
+  // ---- Stanje u headeru (Prijava/Registracija <-> Ime + Odjava) ----
+  async function renderAuthHeader() {
+    const { data: { session } } = await window.supabase.auth.getSession();
+    const navActionGroups = document.querySelectorAll(".nav-actions");
+
+    navActionGroups.forEach(group => {
+      const loginLink = group.querySelector('a[href="prijava.html"]');
+      const regLink = group.querySelector('a[href="registracija.html"]');
+      if (!loginLink || !regLink) return; // već zamenjeno ili nije standardna grupa
+
+      if (session) {
+        const name = session.user.user_metadata?.full_name || session.user.email;
+        const firstName = name.split(" ")[0];
+
+        const userLabel = document.createElement("span");
+        userLabel.className = "btn btn-outline btn-sm";
+        userLabel.style.cursor = "default";
+        userLabel.textContent = "👋 " + firstName;
+
+        const logoutBtn = document.createElement("button");
+        logoutBtn.type = "button";
+        logoutBtn.className = "btn btn-primary btn-sm";
+        logoutBtn.textContent = "Odjava";
+        logoutBtn.addEventListener("click", async () => {
+          await window.supabase.auth.signOut();
+          window.location.href = "index.html";
+        });
+
+        loginLink.replaceWith(userLabel);
+        regLink.replaceWith(logoutBtn);
+      }
+    });
+  }
+
+  await renderAuthHeader();
+
+  window.supabase.auth.onAuthStateChange(() => {
+    // Osveži header kad se promeni stanje prijave (npr. u drugom tabu)
+    renderAuthHeader();
+  });
+}
+
+/* ---------- Objavi projekat: upis u Supabase (projects tabela) ---------- */
+function initProjectForms() {
+  if (!window.supabase) return;
+
+  async function handleProjectSubmit(form, buildPayload) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearFormError(form);
+
+      const { data: { session } } = await window.supabase.auth.getSession();
+      if (!session) {
+        showFormError(form, "Moraš biti prijavljen/a da bi objavio/la projekat. Preusmeravamo te na prijavu...");
+        setTimeout(() => { window.location.href = "prijava.html"; }, 1500);
+        return;
+      }
+
+      const submitBtn = form.querySelector("button[type=submit]");
+      submitBtn.disabled = true;
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "Slanje...";
+
+      const payload = buildPayload(session.user.id);
+      const { error } = await window.supabase.from("projects").insert(payload);
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+
+      if (error) {
+        showFormError(form, "Greška pri slanju: " + error.message);
+        return;
+      }
+
+      const success = form.parentElement.querySelector(".form-success");
+      if (success) {
+        success.classList.add("show");
+        success.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      form.reset();
+    });
+  }
+
+  const brzaForm = document.getElementById("brzaForm");
+  if (brzaForm) {
+    handleProjectSubmit(brzaForm, (userId) => ({
+      client_id: userId,
+      title: document.getElementById("bp-potreba").value.slice(0, 80),
+      description: document.getElementById("bp-potreba").value,
+      budget: document.getElementById("bp-budzet").value,
+      deadline: null,
+      category: null
+    }));
+  }
+
+  const detaljnoForm = document.getElementById("detaljnoForm");
+  if (detaljnoForm) {
+    handleProjectSubmit(detaljnoForm, (userId) => ({
+      client_id: userId,
+      title: document.getElementById("dz-naziv").value,
+      description: document.getElementById("dz-opis").value,
+      budget: document.getElementById("dz-budzet").value,
+      deadline: null,
+      category: document.getElementById("dz-kategorija").value
+    }));
+  }
 }
 
 /* ---------- Objavi projekat: pop-up izbor tipa objave ---------- */
@@ -1377,6 +1587,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initForms();
   initProjectChoice();
   initAuthToggle();
+  initSupabaseAuth();
+  initProjectForms();
   initChatPage();
   initPaymentModal();
   initReportModal();

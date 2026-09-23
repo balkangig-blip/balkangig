@@ -82,7 +82,7 @@
         <div class="form-icon-badge">⚡</div>
         <h3 style="margin-bottom:6px;">Brza ponuda</h3>
         <p style="margin-bottom:24px;">Za jednostavne projekte kojima je potreban brz odgovor.</p>
-        <form data-validate>
+        <form data-validate id="brzaForm">
           <div class="form-grid">
             <div class="field">
               <label for="bp-ime">Ime</label>
@@ -122,7 +122,7 @@
         <div class="form-icon-badge">📋</div>
         <h3 style="margin-bottom:6px;">Detaljan zahtev</h3>
         <p style="margin-bottom:24px;">Za veće ili složenije projekte kojima je potreban precizan opis.</p>
-        <form data-validate>
+        <form data-validate id="detaljnoForm">
           <div class="form-grid">
             <div class="field">
               <label for="dz-ime">Ime i prezime</label>
@@ -261,6 +261,7 @@
   </div>
 </footer>
 
+<script type="module" src="supabase-client.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
