@@ -64,16 +64,21 @@
     <h1>Napravi nalog</h1>
     <p class="auth-sub">Pridruži se BalkanGig zajednici</p>
 
-    <div class="role-toggle">
+    <div class="role-toggle role-toggle-3">
       <button type="button" class="active" data-role="klijent">Tražim freelancera</button>
       <button type="button" data-role="freelancer">Ja sam freelancer</button>
+      <button type="button" data-role="firma">Ja sam firma</button>
     </div>
 
     <div class="form-success" id="regSuccess">✅ Nalog je uspešno napravljen! (demo — bez backend-a)</div>
     <form data-validate id="regForm">
       <div class="field">
-        <label for="re-ime">Ime i prezime</label>
+        <label for="re-ime" id="re-ime-label">Ime i prezime</label>
         <input type="text" id="re-ime" placeholder="npr. Marko Marković" required>
+      </div>
+      <div class="field" id="re-sajt-field" hidden>
+        <label for="re-sajt">Sajt firme (opciono)</label>
+        <input type="url" id="re-sajt" placeholder="https://firma.com">
       </div>
       <div class="field">
         <label for="re-email">Email</label>

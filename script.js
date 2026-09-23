@@ -667,11 +667,16 @@ async function initSupabaseAuth() {
       clearFormError(regForm);
       const submitBtn = regForm.querySelector("button[type=submit]");
       const activeRoleBtn = document.querySelector(".role-toggle button.active");
-      const role = activeRoleBtn && activeRoleBtn.dataset.role === "freelancer" ? "freelancer" : "klijent";
+      const validRoles = ["klijent", "freelancer", "firma"];
+      const role = activeRoleBtn && validRoles.includes(activeRoleBtn.dataset.role)
+        ? activeRoleBtn.dataset.role
+        : "klijent";
 
       const fullName = document.getElementById("re-ime").value.trim();
       const email = document.getElementById("re-email").value.trim();
       const password = document.getElementById("re-lozinka").value;
+      const sajtInput = document.getElementById("re-sajt");
+      const website = role === "firma" && sajtInput ? sajtInput.value.trim() : null;
 
       if (password.length < 8) {
         showFormError(regForm, "Lozinka mora imati najmanje 8 karaktera.");
@@ -684,7 +689,7 @@ async function initSupabaseAuth() {
       const { data, error } = await window.supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, role } }
+        options: { data: { full_name: fullName, role, website } }
       });
 
       submitBtn.disabled = false;
@@ -1949,12 +1954,35 @@ function initAuthToggle() {
   const toggle = document.querySelector(".role-toggle");
   if (!toggle) return;
   const buttons = toggle.querySelectorAll("button");
+
+  // Polja koja se menjaju u zavisnosti od izabrane role (samo na registraciji)
+  const imeInput = document.getElementById("re-ime");
+  const imeLabel = document.getElementById("re-ime-label");
+  const sajtField = document.getElementById("re-sajt-field");
+
+  function applyRoleFields(role) {
+    if (!imeLabel || !imeInput) return;
+    if (role === "firma") {
+      imeLabel.textContent = "Naziv firme";
+      imeInput.placeholder = "npr. Balkan Digital d.o.o.";
+      if (sajtField) sajtField.hidden = false;
+    } else {
+      imeLabel.textContent = "Ime i prezime";
+      imeInput.placeholder = "npr. Marko Marković";
+      if (sajtField) sajtField.hidden = true;
+    }
+  }
+
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       buttons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
+      applyRoleFields(btn.dataset.role);
     });
   });
+
+  const initiallyActive = toggle.querySelector("button.active");
+  applyRoleFields(initiallyActive ? initiallyActive.dataset.role : "klijent");
 }
 
 /* ---------- Init ---------- */
