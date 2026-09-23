@@ -1026,12 +1026,52 @@ async function initChatPage() {
 
   function updateTitleNotification() {
     document.title = unreadCount > 0 ? `(${unreadCount}) Nova poruka! · ${originalTitle}` : originalTitle;
+    setFaviconBadge(unreadCount > 0);
   }
 
   function markAsRead() {
     if (unreadCount === 0) return;
     unreadCount = 0;
     updateTitleNotification();
+  }
+
+  /* ---- Crvena tačkica na favikoni (vidi se i kad je naslov taba skraćen) ---- */
+  function setFaviconBadge(showDot) {
+    const link = document.querySelector("link[rel='icon']");
+    if (!link) return;
+    const dot = showDot ? `<circle cx="25" cy="7" r="6" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>` : "";
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#14b8a6"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(#g)"/><text x="16" y="22" font-family="Arial,sans-serif" font-weight="800" font-size="18" fill="white" text-anchor="middle">B</text>${dot}</svg>`;
+    link.href = "data:image/svg+xml," + encodeURIComponent(svg);
+  }
+
+  /* ---- Toast obaveštenje gore na stranici kad stigne poruka iz drugog razgovora ---- */
+  const toastEl = document.getElementById("chatToast");
+  let toastHideTimer = null;
+  function showNewMessageToast(partner, previewText) {
+    if (!toastEl || !partner) return;
+    toastEl.innerHTML = `
+      <img src="${partner.img}" alt="${partner.name}" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(partner.name)}&backgroundType=gradientLinear';">
+      <div class="chat-toast-body">
+        <strong>${partner.name}</strong>
+        <span>${previewText}</span>
+      </div>
+    `;
+    toastEl.onclick = () => { selectConversation(partner.id); toastEl.classList.remove("show"); };
+    toastEl.classList.add("show");
+    clearTimeout(toastHideTimer);
+    toastHideTimer = setTimeout(() => toastEl.classList.remove("show"), 5000);
+  }
+
+  /* ---- Desktop notifikacija (van browsera) kad je tab u pozadini ---- */
+  if (window.Notification && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+  function showDesktopNotification(partner, previewText) {
+    if (!window.Notification || Notification.permission !== "granted" || !document.hidden) return;
+    try {
+      const n = new Notification(`Nova poruka od ${partner.name}`, { body: previewText, icon: partner.img });
+      n.onclick = () => { window.focus(); };
+    } catch (e) { /* neki browseri ne dozvoljavaju iz raznih razloga — tiho ignoriši */ }
   }
 
   /* ---- Job status i fajlovi ostaju lokalni (demo) po paru korisnika ----
@@ -1108,7 +1148,7 @@ async function initChatPage() {
   function dbMessagesWith(otherId) {
     return allMessages
       .filter(m => (m.sender_id === myId && m.receiver_id === otherId) || (m.sender_id === otherId && m.receiver_id === myId))
-      .map(m => ({ from: m.sender_id === myId ? "me" : "them", text: m.content, time: new Date(m.created_at).getTime() }));
+      .map(m => ({ id: m.id, from: m.sender_id === myId ? "me" : "them", text: m.content, time: new Date(m.created_at).getTime(), seen: !!m.read }));
   }
 
   function mergedMessagesWith(otherId) {
@@ -1131,6 +1171,26 @@ async function initChatPage() {
     return error;
   }
 
+  /* ---- "Viđeno": označi primljene poruke od otherId kao pročitane.
+     Koristi postojeću "read" boolean kolonu u messages tabeli. ---- */
+  async function markConversationRead(otherId) {
+    if (document.hidden) return; // ne označavaj kao pročitano dok korisnik ne gleda u tab
+    const unread = allMessages.filter(m => m.sender_id === otherId && m.receiver_id === myId && !m.read);
+    if (unread.length === 0) return;
+    const ids = unread.map(m => m.id);
+    const { error } = await window.supabase
+      .from("messages")
+      .update({ read: true })
+      .in("id", ids)
+      .eq("receiver_id", myId);
+    if (!error) {
+      unread.forEach(m => { m.read = true; });
+      if (String(currentId) === String(otherId)) renderMessages(otherId);
+    } else {
+      console.log("[BalkanGig chat] Nije uspelo obeležavanje kao pročitano (verovatno nedostaje UPDATE RLS politika na messages tabeli):", error.message);
+    }
+  }
+
   /* ---- Provera novih poruka: zove je i realtime event i redovni polling.
      Ovo je "mreža za slučaj" ako realtime iz nekog razloga ne stigne
      (npr. Realtime nije uključen za tabelu "messages" u Supabase-u,
@@ -1144,14 +1204,105 @@ async function initChatPage() {
     if (newIncoming.length > 0) {
       const isTabHidden = document.hidden;
       const isDifferentChat = newIncoming.some(m => String(m.sender_id) !== String(currentId));
+
       if (isTabHidden || isDifferentChat) {
         unreadCount += newIncoming.length;
         updateTitleNotification();
+
+        const last = newIncoming[newIncoming.length - 1];
+        const partner = await fetchPartnerProfile(last.sender_id);
+        showDesktopNotification(partner, last.content);
+        if (isDifferentChat) showNewMessageToast(partner, last.content);
       }
     }
 
-    if (currentId !== null) renderMessages(currentId);
+    if (currentId !== null) {
+      renderMessages(currentId);
+      await markConversationRead(currentId);
+    }
     await renderList(searchEl ? searchEl.value : "");
+  }
+
+  /* ---- Prisustvo (online / u chatu) i "X kuca..." po paru korisnika.
+     Koristi Supabase Realtime Presence + Broadcast na kanalu posvećenom
+     baš tom paru (ja + sagovornik), odvojeno od globalnog kanala za poruke. ---- */
+  let presenceChannel = null;
+  let typingHideTimer = null;
+  let typingSendTimer = null;
+  let typingSendActive = false;
+
+  function pairChannelName(otherId) {
+    return "chat-pair-" + [String(myId), String(otherId)].sort().join("_");
+  }
+
+  function setOnlineIndicator(isOnline) {
+    const dot = document.getElementById("chatPartnerOnlineDot");
+    const statusText = document.getElementById("chatPartnerStatusText");
+    if (dot) dot.classList.toggle("online", !!isOnline);
+    if (statusText) {
+      if (!statusText.dataset.role) statusText.dataset.role = statusText.textContent;
+      statusText.textContent = isOnline ? "Online sada" : statusText.dataset.role;
+    }
+  }
+
+  function setTypingIndicator(show) {
+    const row = document.getElementById("chatTypingRow");
+    if (!row) return;
+    if (show) {
+      const label = document.getElementById("chatTypingText");
+      const p = partnerCache[currentId];
+      if (label) label.textContent = (p ? p.name : "Sagovornik") + " kuca...";
+      row.style.display = "flex";
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    } else {
+      row.style.display = "none";
+    }
+  }
+
+  function leavePairChannel() {
+    if (presenceChannel) {
+      window.supabase.removeChannel(presenceChannel);
+      presenceChannel = null;
+    }
+    clearTimeout(typingHideTimer);
+    clearTimeout(typingSendTimer);
+    typingSendActive = false;
+    setTypingIndicator(false);
+    setOnlineIndicator(false);
+  }
+
+  function joinPairChannel(otherId) {
+    leavePairChannel();
+    presenceChannel = window.supabase.channel(pairChannelName(otherId), {
+      config: { presence: { key: String(myId) } }
+    });
+
+    presenceChannel
+      .on("presence", { event: "sync" }, () => {
+        const state = presenceChannel.presenceState();
+        const partnerPresences = state[String(otherId)] || [];
+        setOnlineIndicator(partnerPresences.length > 0);
+      })
+      .on("broadcast", { event: "typing" }, (payload) => {
+        if (!payload.payload || String(payload.payload.from) !== String(otherId)) return;
+        clearTimeout(typingHideTimer);
+        if (payload.payload.isTyping) {
+          setTypingIndicator(true);
+          typingHideTimer = setTimeout(() => setTypingIndicator(false), 3000);
+        } else {
+          setTypingIndicator(false);
+        }
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await presenceChannel.track({ online_at: new Date().toISOString() });
+        }
+      });
+  }
+
+  function sendTypingSignal(isTyping) {
+    if (!presenceChannel || currentId === null) return;
+    presenceChannel.send({ type: "broadcast", event: "typing", payload: { from: myId, isTyping } });
   }
 
   function showContactWarning() {
@@ -1297,7 +1448,7 @@ async function initChatPage() {
           </div>
         `;
       }
-      return `<div class="msg ${cls}">${m.text}</div>`;
+      return `<div class="msg ${cls}"><span class="msg-text">${m.text}</span>${m.from === "me" ? `<span class="msg-meta"><span>${formatChatTime(m.time)}</span><span class="msg-seen${m.seen ? " seen" : ""}" title="${m.seen ? "Viđeno" : "Poslato"}">${m.seen ? "✓✓" : "✓"}</span></span>` : ""}</div>`;
     }).join("");
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
@@ -1314,10 +1465,13 @@ async function initChatPage() {
     windowHead.innerHTML = `
       <div class="chat-window-head-info">
         <button type="button" class="chat-back-btn" id="chatBackBtnInner" aria-label="Nazad">←</button>
-        <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(p.name)}&backgroundType=gradientLinear';">
+        <div class="chat-avatar-wrap">
+          <img src="${p.img}" alt="${p.name}" onerror="this.onerror=null;this.src='https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(p.name)}&backgroundType=gradientLinear';">
+          <span class="chat-online-dot" id="chatPartnerOnlineDot" title="Online"></span>
+        </div>
         <div>
           <h3>${p.name}</h3>
-          <span>${p.role || ""}</span>
+          <span id="chatPartnerStatusText">${p.role || ""}</span>
         </div>
       </div>
       <div class="chat-window-head-actions">
@@ -1357,6 +1511,8 @@ async function initChatPage() {
     await renderList(searchEl ? searchEl.value : "");
     textarea.focus();
     markAsRead();
+    joinPairChannel(id);
+    await markConversationRead(id);
   }
 
   async function sendMessage() {
@@ -1368,6 +1524,12 @@ async function initChatPage() {
       return;
     }
     hideContactWarning();
+
+    if (typingSendActive) {
+      typingSendActive = false;
+      clearTimeout(typingSendTimer);
+      sendTypingSignal(false);
+    }
 
     textarea.value = "";
     sendBtn.disabled = true;
@@ -1444,6 +1606,18 @@ async function initChatPage() {
     }
   });
   textarea.addEventListener("input", hideContactWarning);
+  textarea.addEventListener("input", () => {
+    if (currentId === null || !presenceChannel) return;
+    if (!typingSendActive) {
+      typingSendActive = true;
+      sendTypingSignal(true);
+    }
+    clearTimeout(typingSendTimer);
+    typingSendTimer = setTimeout(() => {
+      typingSendActive = false;
+      sendTypingSignal(false);
+    }, 1800);
+  });
   if (searchEl) searchEl.addEventListener("input", () => renderList(searchEl.value));
   if (backBtn) backBtn.addEventListener("click", () => shell.classList.remove("chat-open"));
 
@@ -1464,6 +1638,17 @@ async function initChatPage() {
         const m = payload.new;
         if (m.sender_id !== myId && m.receiver_id !== myId) return; // nije moja poruka
         await checkForNewMessages();
+      })
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, (payload) => {
+        // Stiže npr. kad sagovornik pročita moju poruku (read postane true) —
+        // ažuriraj kvačicu "viđeno" bez čekanja na sledeći polling ciklus.
+        const m = payload.new;
+        if (m.sender_id !== myId && m.receiver_id !== myId) return;
+        const idx = allMessages.findIndex(x => x.id === m.id);
+        if (idx !== -1) allMessages[idx] = m;
+        if (currentId !== null && (String(m.sender_id) === String(currentId) || String(m.receiver_id) === String(currentId))) {
+          renderMessages(currentId);
+        }
       })
       .subscribe((status, err) => {
         // Otvori konzolu u browseru (F12 → Console) da vidiš ovaj status.

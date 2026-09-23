@@ -2784,6 +2784,144 @@ html[data-theme="light"] .theme-toggle .icon-moon {
   text-align: center;
 }
 
+/* Kvačice "poslato / viđeno" ispod mojih poruka */
+.msg-own {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.msg-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.75);
+  align-self: flex-end;
+}
+
+.msg-seen {
+  letter-spacing: -1px;
+  opacity: 0.7;
+}
+
+.msg-seen.seen {
+  opacity: 1;
+  color: #93f5e1;
+}
+
+/* Online tačkica na avataru sagovornika u zaglavlju chata */
+.chat-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.chat-online-dot {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--muted);
+  border: 2px solid var(--white);
+  transition: background 0.2s ease;
+}
+
+.chat-online-dot.online {
+  background: #4ade80;
+}
+
+/* Indikator "X kuca..." */
+.typing-row {
+  align-items: center;
+  gap: 8px;
+  margin: -4px 22px 6px;
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-alt);
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  width: fit-content;
+}
+
+.typing-dots {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.typing-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--text-soft);
+  animation: typingBounce 1.2s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes typingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+
+/* Toast obaveštenje o novoj poruci, gore na stranici */
+.chat-toast {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translate(-50%, -140%);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 360px;
+  padding: 13px 18px;
+  border-radius: var(--radius-md);
+  background: var(--white);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  opacity: 0;
+  transition: transform 0.3s var(--ease-smooth), opacity 0.3s var(--ease-smooth);
+}
+
+.chat-toast.show {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.chat-toast img {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.chat-toast-body strong {
+  display: block;
+  color: var(--heading);
+  font-size: 0.85rem;
+}
+
+.chat-toast-body span {
+  display: block;
+  color: var(--text-soft);
+  font-size: 0.78rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-toast { transition: opacity 0.2s linear; }
+  .typing-dots span { animation: none; }
+}
+
 .chat-job-panel {
   margin: 0 22px 4px;
   padding: 14px 16px;

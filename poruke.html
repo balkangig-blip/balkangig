@@ -14,6 +14,8 @@
 
 <div class="bg-mist-layer"><span></span><span></span></div>
 
+<div class="chat-toast" id="chatToast" role="status" aria-live="polite"></div>
+
 <header class="site-header">
   <div class="container nav">
     <a href="index.html" class="brand">BalkanGig</a>
@@ -87,6 +89,10 @@
         <div id="chatWindowBody" style="display:none; flex:1; min-height:0; flex-direction:column;">
           <div class="chat-job-panel" id="chatJobPanel"></div>
           <div class="chat-messages" id="chatMessages"></div>
+          <div class="typing-row" id="chatTypingRow" style="display:none;">
+            <span class="typing-dots"><span></span><span></span><span></span></span>
+            <span id="chatTypingText">kuca...</span>
+          </div>
           <div class="contact-warning" id="contactWarning" role="alert" aria-live="polite"></div>
           <div class="chat-input-row" id="chatInputRow">
             <input type="file" id="chatFileInput" hidden accept="image/*,.pdf,.doc,.docx,.zip,.rar,.txt,.xlsx,.psd,.ai,.fig">
