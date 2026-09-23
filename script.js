@@ -1020,6 +1020,20 @@ async function initChatPage() {
   let allMessages = []; // sve prave poruke iz baze koje uključuju mene
   const partnerCache = {}; // id -> { id, name, img, role }
 
+  /* ---- Notifikacija u naslovu taba kad stigne nova poruka ---- */
+  const originalTitle = document.title;
+  let unreadCount = 0;
+
+  function updateTitleNotification() {
+    document.title = unreadCount > 0 ? `(${unreadCount}) Nova poruka! · ${originalTitle}` : originalTitle;
+  }
+
+  function markAsRead() {
+    if (unreadCount === 0) return;
+    unreadCount = 0;
+    updateTitleNotification();
+  }
+
   /* ---- Job status i fajlovi ostaju lokalni (demo) po paru korisnika ----
      Napomena: status posla (u toku/završeno/plaćeno) i prilozi fajlova
      još nisu deo baze (nisu vezani za konkretan "project"), pa i dalje
@@ -1115,6 +1129,29 @@ async function initChatPage() {
       content: text
     });
     return error;
+  }
+
+  /* ---- Provera novih poruka: zove je i realtime event i redovni polling.
+     Ovo je "mreža za slučaj" ako realtime iz nekog razloga ne stigne
+     (npr. Realtime nije uključen za tabelu "messages" u Supabase-u,
+     ili je konekcija na websocket ispala) — tako korisnik nikad ne mora
+     ručno da refresuje ceo tab da bi video novu poruku. ---- */
+  async function checkForNewMessages() {
+    const prevIds = new Set(allMessages.map(m => m.id));
+    await loadAllMessages();
+    const newIncoming = allMessages.filter(m => !prevIds.has(m.id) && m.sender_id !== myId);
+
+    if (newIncoming.length > 0) {
+      const isTabHidden = document.hidden;
+      const isDifferentChat = newIncoming.some(m => String(m.sender_id) !== String(currentId));
+      if (isTabHidden || isDifferentChat) {
+        unreadCount += newIncoming.length;
+        updateTitleNotification();
+      }
+    }
+
+    if (currentId !== null) renderMessages(currentId);
+    await renderList(searchEl ? searchEl.value : "");
   }
 
   function showContactWarning() {
@@ -1319,6 +1356,7 @@ async function initChatPage() {
     renderMessages(id);
     await renderList(searchEl ? searchEl.value : "");
     textarea.focus();
+    markAsRead();
   }
 
   async function sendMessage() {
@@ -1417,16 +1455,48 @@ async function initChatPage() {
   }
 
   // Realtime: osveži razgovor kad stigne nova poruka (od mene ili sagovornika)
-  window.supabase
+  let realtimeChannel = window.supabase
     .channel("messages-" + myId)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, async (payload) => {
       const m = payload.new;
       if (m.sender_id !== myId && m.receiver_id !== myId) return; // nije moja poruka
-      await loadAllMessages();
-      if (currentId !== null) renderMessages(currentId);
-      await renderList(searchEl ? searchEl.value : "");
+      await checkForNewMessages();
     })
     .subscribe();
+
+  // Fallback polling: proveri nove poruke na svake 4 sekunde, bez obzira
+  // na realtime — ovo garantuje da poruke stižu i ako websocket konekcija
+  // ispadne ili Realtime nije uključen za tabelu u Supabase podešavanjima.
+  const POLL_INTERVAL_MS = 4000;
+  setInterval(() => {
+    checkForNewMessages();
+  }, POLL_INTERVAL_MS);
+
+  // Kad se korisnik vrati na tab (ili ga fokusira), odmah proveri poruke
+  // i skloni notifikaciju iz naslova.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      markAsRead();
+      checkForNewMessages();
+    }
+  });
+  window.addEventListener("focus", markAsRead);
+
+  // Ako websocket konekcija ispadne (npr. laptop je bio u spavanju), pokušaj
+  // da se ponovo pretplatiš kad tab opet postane vidljiv.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && realtimeChannel && realtimeChannel.state !== "joined") {
+      window.supabase.removeChannel(realtimeChannel);
+      realtimeChannel = window.supabase
+        .channel("messages-" + myId)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, async (payload) => {
+          const m = payload.new;
+          if (m.sender_id !== myId && m.receiver_id !== myId) return;
+          await checkForNewMessages();
+        })
+        .subscribe();
+    }
+  });
 
   // Izloži funkciju za plaćanje globalno (koristi je payment modal)
   window.__balkanGigHandlePaymentSuccess = function (id) {
