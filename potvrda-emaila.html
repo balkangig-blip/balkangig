@@ -133,12 +133,8 @@
       const textEl = document.getElementById("confirmSuccessText");
       const btn = document.getElementById("confirmContinueBtn");
 
-      if (role === "firma") {
-        textEl.textContent = `Nalog firme "${name || ""}" je aktivan. Sad možeš da kačiš oglase i pregledaš prijave freelancera.`;
-        btn.textContent = "Nastavi na BalkanGig";
-        btn.href = "index.html";
-      } else if (role === "freelancer") {
-        textEl.textContent = "Nalog je aktivan. Pogledaj otvorene oglase firmi i javi se na prve koji ti odgovaraju.";
+      if (role === "freelancer") {
+        textEl.textContent = "Nalog je aktivan. Pogledaj otvorene oglase klijenata koji traže freelancera i javi se na prve koji ti odgovaraju.";
         btn.textContent = "Pogledaj oglase";
         btn.href = "oglasi.html";
       } else {

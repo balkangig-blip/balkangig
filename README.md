@@ -1,6 +1,6 @@
 # BalkanGig
 
-Statički (frontend-only) sajt za BalkanGig — platformu koja povezuje firme i klijente sa freelancerima sa Balkana.
+Statički (frontend-only) sajt za BalkanGig — platformu koja povezuje klijente sa freelancerima sa Balkana.
 
 Sajt je napravljen u čistom HTML-u, CSS-u i JavaScript-u, bez ikakvog build alata ili backend-a, i radi odmah nakon otvaranja `index.html`.
 

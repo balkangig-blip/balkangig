@@ -667,7 +667,7 @@ async function initSupabaseAuth() {
       clearFormError(regForm);
       const submitBtn = regForm.querySelector("button[type=submit]");
       const activeRoleBtn = document.querySelector(".role-toggle button.active");
-      const validRoles = ["klijent", "freelancer", "firma"];
+      const validRoles = ["klijent", "freelancer"];
       const role = activeRoleBtn && validRoles.includes(activeRoleBtn.dataset.role)
         ? activeRoleBtn.dataset.role
         : "klijent";
@@ -675,8 +675,6 @@ async function initSupabaseAuth() {
       const fullName = document.getElementById("re-ime").value.trim();
       const email = document.getElementById("re-email").value.trim();
       const password = document.getElementById("re-lozinka").value;
-      const sajtInput = document.getElementById("re-sajt");
-      const website = role === "firma" && sajtInput ? sajtInput.value.trim() : null;
 
       if (password.length < 8) {
         showFormError(regForm, "Lozinka mora imati najmanje 8 karaktera.");
@@ -690,7 +688,7 @@ async function initSupabaseAuth() {
         email,
         password,
         options: {
-          data: { full_name: fullName, role, website },
+          data: { full_name: fullName, role },
           emailRedirectTo: window.location.origin + window.location.pathname.replace(/registracija\.html$/, "") + "potvrda-emaila.html"
         }
       });
@@ -755,6 +753,7 @@ async function initSupabaseAuth() {
       if (session) {
         const name = session.user.user_metadata?.full_name || session.user.email;
         const firstName = name.split(" ")[0];
+        const role = session.user.user_metadata?.role;
 
         const userLabel = document.createElement("span");
         userLabel.className = "btn btn-outline btn-sm";
@@ -772,6 +771,16 @@ async function initSupabaseAuth() {
 
         loginLink.replaceWith(userLabel);
         regLink.replaceWith(logoutBtn);
+
+        // Klijent (onaj ko traži freelancera) dobija prečicu da odmah
+        // postavi oglas i opiše šta mu treba.
+        if (role === "klijent") {
+          const postBtn = document.createElement("a");
+          postBtn.href = "objavi-projekat.html";
+          postBtn.className = "btn btn-primary btn-sm post-oglas-btn";
+          postBtn.textContent = "+ Postavi oglas";
+          userLabel.insertAdjacentElement("beforebegin", postBtn);
+        }
       }
     });
   }
@@ -782,6 +791,30 @@ async function initSupabaseAuth() {
     // Osveži header kad se promeni stanje prijave (npr. u drugom tabu)
     renderAuthHeader();
   });
+}
+
+/* ---------- Objavi projekat: samo klijent sme da objavi šta mu treba ---------- */
+async function initProjectPageGuard() {
+  const tabs = document.querySelector(".forms-tabs");
+  if (!tabs) return "klijent"; // nismo na objavi-projekat.html
+  if (!window.supabase) return "klijent";
+
+  const { data: { session } } = await window.supabase.auth.getSession();
+  const role = session?.user?.user_metadata?.role;
+  if (role !== "freelancer") return "klijent"; // klijenti i neulogovani gosti nastavljaju normalno
+
+  // Freelanceri ne objavljuju šta im treba — to je uloga klijenta.
+  tabs.style.display = "none";
+  const note = document.querySelector(".forms-tabs-note");
+  if (note) note.style.display = "none";
+  const panelBrza = document.getElementById("panelBrza");
+  if (panelBrza) panelBrza.style.display = "none";
+  const panelDetaljno = document.getElementById("panelDetaljno");
+  if (panelDetaljno) panelDetaljno.style.display = "none";
+  const notice = document.getElementById("freelancerBlockNotice");
+  if (notice) notice.style.display = "";
+
+  return "freelancer";
 }
 
 /* ---------- Objavi projekat: upis u Supabase (projects tabela) ---------- */
@@ -797,6 +830,11 @@ function initProjectForms() {
       if (!session) {
         showFormError(form, "Moraš biti prijavljen/a da bi objavio/la projekat. Preusmeravamo te na prijavu...");
         setTimeout(() => { window.location.href = "prijava.html"; }, 1500);
+        return;
+      }
+
+      if (session.user.user_metadata?.role === "freelancer") {
+        showFormError(form, "Samo klijenti mogu da objave šta im treba. Ovaj nalog je registrovan kao freelancer.");
         return;
       }
 
@@ -851,10 +889,9 @@ function initProjectForms() {
 }
 
 /* ---------- Objavi projekat: pop-up izbor tipa objave ---------- */
-function initProjectChoice() {
+function initProjectChoice(skipAutoOpen) {
   const backdrop = document.getElementById("choiceModalBackdrop");
   if (!backdrop) return;
-
   const closeBtn = document.getElementById("choiceModalClose");
   const reopenBtn = document.getElementById("reopenChoiceBtn");
   const choiceCards = backdrop.querySelectorAll(".choice-card");
@@ -895,7 +932,8 @@ function initProjectChoice() {
   });
 
   // Pop-up se lepo pojavi kratko nakon učitavanja stranice
-  setTimeout(openModal, 350);
+  // (osim ako je nalog freelancer i cela stranica je zaključana za njega)
+  if (!skipAutoOpen) setTimeout(openModal, 350);
 }
 
 /* =========================================================
@@ -1006,6 +1044,7 @@ async function initChatPage() {
     return;
   }
   const myId = session.user.id;
+  const myRole = session.user.user_metadata?.role === "freelancer" ? "freelancer" : "klijent";
 
   const listEl = document.getElementById("chatListItems");
   const searchEl = document.getElementById("chatListSearch");
@@ -1391,9 +1430,17 @@ async function initChatPage() {
     const priceLabel = p.price ? `Cena: ${p.price}` : "";
     let actionsHTML = "";
     if (status === "u_toku") {
-      actionsHTML = `<button type="button" class="btn btn-sm btn-done" id="markDoneBtn">✅ Označi kao završeno</button>`;
+      if (myRole === "klijent") {
+        actionsHTML = `<button type="button" class="btn btn-sm btn-done" id="markDoneBtn">✅ Označi kao završeno</button>`;
+      } else {
+        actionsHTML = `<span style="color:var(--text-soft); font-size:0.85rem;">Čeka se da klijent označi projekat kao završen.</span>`;
+      }
     } else if (status === "zavrseno") {
-      actionsHTML = `<button type="button" class="btn btn-primary btn-sm" id="payNowBtn">💳 Plati preko PayPal-a</button>`;
+      if (myRole === "klijent") {
+        actionsHTML = `<button type="button" class="btn btn-primary btn-sm" id="payNowBtn">💳 Plati preko PayPal-a</button>`;
+      } else {
+        actionsHTML = `<span style="color:#4ade80; font-weight:700; font-size:0.85rem;">Klijent je označio projekat kao završen — čeka se plaćanje.</span>`;
+      }
     } else {
       actionsHTML = `<span style="color:#4ade80; font-weight:700; font-size:0.85rem;">Posao je plaćen 🎉</span>`;
     }
@@ -1557,6 +1604,7 @@ async function initChatPage() {
   }
 
   function markJobDone(id) {
+    if (myRole !== "klijent") return; // samo klijent može da označi projekat kao završen
     setJobStatus(id, "zavrseno");
     partnerCache[id] && renderJobPanel(partnerCache[id]);
     renderList(searchEl ? searchEl.value : "");
@@ -1958,34 +2006,12 @@ function initAuthToggle() {
   if (!toggle) return;
   const buttons = toggle.querySelectorAll("button");
 
-  // Polja koja se menjaju u zavisnosti od izabrane role (samo na registraciji)
-  const imeInput = document.getElementById("re-ime");
-  const imeLabel = document.getElementById("re-ime-label");
-  const sajtField = document.getElementById("re-sajt-field");
-
-  function applyRoleFields(role) {
-    if (!imeLabel || !imeInput) return;
-    if (role === "firma") {
-      imeLabel.textContent = "Naziv firme";
-      imeInput.placeholder = "npr. Balkan Digital d.o.o.";
-      if (sajtField) sajtField.hidden = false;
-    } else {
-      imeLabel.textContent = "Ime i prezime";
-      imeInput.placeholder = "npr. Marko Marković";
-      if (sajtField) sajtField.hidden = true;
-    }
-  }
-
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
       buttons.forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
-      applyRoleFields(btn.dataset.role);
     });
   });
-
-  const initiallyActive = toggle.querySelector("button.active");
-  applyRoleFields(initiallyActive ? initiallyActive.dataset.role : "klijent");
 }
 
 /* ---------- Init ---------- */
@@ -1999,7 +2025,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   initListingPage();
   initProfilePage();
   initForms();
-  initProjectChoice();
+  const projectPageAccess = await initProjectPageGuard();
+  initProjectChoice(projectPageAccess === "freelancer");
   initAuthToggle();
   initSupabaseAuth();
   initProjectForms();

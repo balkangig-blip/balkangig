@@ -516,6 +516,12 @@ html[data-theme="light"] .theme-toggle .icon-moon {
   transition: transform var(--t-fast) var(--ease-smooth), background-color var(--t-fast) var(--ease-smooth), border-color var(--t-fast) var(--ease-smooth), box-shadow var(--t-fast) var(--ease-smooth), color var(--t-fast) var(--ease-smooth);
   -webkit-tap-highlight-color: transparent;
 }
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
 
 .btn:active {
   transform: scale(0.96);

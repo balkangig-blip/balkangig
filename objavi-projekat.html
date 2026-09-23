@@ -77,6 +77,14 @@
       <button type="button" id="reopenChoiceBtn">Nisi siguran/na šta ti treba? Pomozi mi da izaberem</button>
     </div>
 
+    <!-- Prikazuje se samo ulogovanim freelancerima — oni ne objavljuju šta im treba, već se javljaju na oglase -->
+    <div class="form-card" id="freelancerBlockNotice" style="display:none; text-align:center;">
+      <div class="form-icon-badge">🔒</div>
+      <h3 style="margin-bottom:6px;">Ova opcija je samo za klijente</h3>
+      <p style="margin-bottom:20px;">Tvoj nalog je registrovan kao freelancer, pa ne možeš da objaviš šta ti treba. Umesto toga, pregledaj otvorene oglase i javi se na poslove koji ti odgovaraju.</p>
+      <a href="oglasi.html" class="btn btn-primary">Pogledaj oglase</a>
+    </div>
+
     <!-- BRZA PONUDA -->
     <div class="form-panel active" id="panelBrza">
       <div class="form-card">
@@ -228,7 +236,7 @@
     <div class="footer-grid">
       <div class="footer-brand">
         <a href="index.html" class="brand">BalkanGig</a>
-        <p>Platforma koja povezuje firme i klijente sa proverenim freelancerima sa Balkana — brzo, jednostavno i bez posrednika.</p>
+        <p>Platforma koja povezuje klijente sa proverenim freelancerima sa Balkana — brzo, jednostavno i bez posrednika.</p>
       </div>
       <div class="footer-col">
         <h4>Platforma</h4>

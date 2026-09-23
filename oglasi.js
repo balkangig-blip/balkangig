@@ -1,6 +1,6 @@
 /* =========================================================
    BalkanGig — oglasi.js
-   Logika za javnu stranicu oglasa (poslovi koje kače firme).
+   Logika za javnu stranicu oglasa (poslovi koje kače klijenti koji traže freelancera).
    Očekuje da su script.js (CATEGORIES, pillsHTML...) i
    supabase-client.js (window.supabase) već učitani PRE ovog fajla.
    ========================================================= */
@@ -25,7 +25,7 @@ let MY_PRIJAVE = new Set(); // id-jevi oglasa na koje je ulogovani freelancer ve
 let CURRENT_SESSION = null;
 
 function ogFallbackImg(name) {
-  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || "Firma")}&backgroundType=gradientLinear`;
+  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name || "Klijent")}&backgroundType=gradientLinear`;
 }
 
 function ogCategoryName(id) {
@@ -46,13 +46,25 @@ function ogCardHTML(o) {
   const company = o.profiles || {};
   const applied = MY_PRIJAVE.has(o.id);
   const opisShort = (o.opis || "").length > 140 ? o.opis.slice(0, 140) + "…" : (o.opis || "");
+  const myRole = CURRENT_SESSION?.user?.user_metadata?.role;
+  const isOwnOglas = CURRENT_SESSION && String(o.company_id) === String(CURRENT_SESSION.user.id);
+  let actionHTML;
+  if (isOwnOglas) {
+    actionHTML = `<span class="tag" style="cursor:default;">Tvoj oglas</span>`;
+  } else if (myRole === "klijent") {
+    actionHTML = `<button type="button" class="btn btn-outline btn-sm" disabled title="Samo freelanceri mogu da se prijave na oglase">Za freelancere</button>`;
+  } else {
+    actionHTML = `<button type="button" class="btn ${applied ? "btn-outline" : "btn-primary"} btn-sm apply-btn" data-id="${o.id}" ${applied ? "disabled" : ""}>
+          ${applied ? "Prijavljen/a ✓" : "Prijavi se"}
+        </button>`;
+  }
   return `
     <div class="freelancer-card oglas-card" data-id="${o.id}">
       <div class="freelancer-card-header">
-        <img class="freelancer-avatar" src="${company.avatar_url || ogFallbackImg(company.full_name)}" alt="${company.full_name || "Firma"}">
+        <img class="freelancer-avatar" src="${company.avatar_url || ogFallbackImg(company.full_name)}" alt="${company.full_name || "Klijent"}">
         <div>
           <h3>${o.naslov}</h3>
-          <div class="freelancer-role">${company.full_name || "Firma"}</div>
+          <div class="freelancer-role">${company.full_name || "Klijent"}</div>
           <div class="freelancer-location">${o.lokacija || "Rad na daljinu"}</div>
         </div>
       </div>
@@ -63,9 +75,7 @@ function ogCardHTML(o) {
       </div>
       <div class="freelancer-card-footer">
         <div class="freelancer-price">${o.budzet || "Po dogovoru"}<span>${ogTimeAgo(o.created_at)}</span></div>
-        <button type="button" class="btn ${applied ? "btn-outline" : "btn-primary"} btn-sm apply-btn" data-id="${o.id}" ${applied ? "disabled" : ""}>
-          ${applied ? "Prijavljen/a ✓" : "Prijavi se"}
-        </button>
+        ${actionHTML}
       </div>
     </div>
   `;
@@ -214,7 +224,7 @@ function initApplyModal() {
     body.innerHTML = `
       <p style="margin-bottom:12px;">Javljaš se na oglas <strong>"${oglas.naslov}"</strong>.</p>
       <div class="field">
-        <label for="applyMsg">Poruka firmi (opciono)</label>
+        <label for="applyMsg">Poruka klijentu (opciono)</label>
         <textarea id="applyMsg" rows="4" placeholder="Ukratko se predstavi i objasni zašto si dobar izbor za ovaj posao..."></textarea>
       </div>
       <div class="form-error" id="applyError" style="display:none;"></div>
@@ -252,7 +262,7 @@ function initApplyModal() {
         <div class="pay-success">
           <div class="pay-success-icon">✓</div>
           <h3>Prijava je poslata!</h3>
-          <p>Firma će moći da vidi tvoju prijavu i da te kontaktira preko poruka.</p>
+          <p>Klijent će moći da vidi tvoju prijavu i da te kontaktira preko poruka.</p>
         </div>
       `;
       const cardBtn = document.querySelector(`.apply-btn[data-id="${oglas.id}"]`);
