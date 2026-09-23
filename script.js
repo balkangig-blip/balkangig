@@ -689,7 +689,10 @@ async function initSupabaseAuth() {
       const { data, error } = await window.supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, role, website } }
+        options: {
+          data: { full_name: fullName, role, website },
+          emailRedirectTo: window.location.origin + window.location.pathname.replace(/registracija\.html$/, "") + "potvrda-emaila.html"
+        }
       });
 
       submitBtn.disabled = false;
